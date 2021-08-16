@@ -7,11 +7,44 @@ use std::io::SeekFrom;
 
 //use file_utils::read::Read;
 
+struct Record {
+    filepath: &'static str,
+    sample_rate: u64
+}
+
+impl Record {
+    fn new(filepath: &'static str) -> Record {
+        let sample_rate = 0;
+        return Record{ filepath, sample_rate };
+    }
+
+    fn findeoh(& self) -> u64
+    {
+        let mut file = File::open(self.filepath).expect("Introuvable");
+        let mut buffer = [0; 3];
+        let mut n = 169;
+        loop {
+            io::Seek::seek(&mut file, SeekFrom::Start(n)).expect("No");
+            io::Read::read(&mut file, &mut buffer).expect("Introuvable");
+            let s = str::from_utf8(&buffer).expect("erreur");
+            n+=1;
+            if s == "EOH" {
+                n+=2;
+                break;
+            }
+        }
+        return n;
+    }
+}
+
+
+
+
 fn main() -> io::Result<()>
 {
     //println!("RSpiker launch");
-    let i = findeof();
-    print!("{}\n", i);
+    /*let i = findeoh();
+    print!("{}\n", i);*/
     /*let mut file = File::open("data/40014.raw")?;
 
     //Header
@@ -39,11 +72,16 @@ fn main() -> io::Result<()>
 
     let i = findEOF();
     print!("{}\n", i);*/
+    let r = Record::new("data/40014.raw");
+    let i = r.findeoh();
+    print!("{}\n", i);
+    print!("{}\n", r.sample_rate);
+
 
     Ok(())
 }
 
-fn findeof() -> u64
+/*fn findeoh() -> u64
 {
     let mut file = File::open("data/40014.raw").expect("Introuvable");
     let mut buffer = [0; 3];
@@ -60,3 +98,4 @@ fn findeof() -> u64
     }
     return n;
 }
+*/
