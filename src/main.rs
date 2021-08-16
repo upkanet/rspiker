@@ -2,6 +2,8 @@ extern crate file_utils;
 
 use std::io;
 use std::fs::File;
+use std::str;
+use std::io::SeekFrom;
 
 use file_utils::read::Read;
 
@@ -9,14 +11,29 @@ fn main() -> io::Result<()>
 {
     println!("RSpiker launch");
     let mut file = File::open("data/40014.raw")?;
+
+    //Header
+    let mut buffer = [0; 168];
+    io::Read::read(&mut file, &mut buffer)?;
+    let s = match str::from_utf8(&buffer) {
+        Ok(v) => v,
+        Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+    };
+    print!("{}\n", s);
+
+    io::Seek::seek(&mut file, SeekFrom::Start(170))?;
+    let mut buffer = [0; 1714];
+    io::Read::read(&mut file, &mut buffer)?;
+    print!("{}\n", "===Seconde===");
+
+    let s = match str::from_utf8(&buffer) {
+        Ok(v) => v,
+        Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+    };
+    print!("{}\n", s);
+
     let x: i16 = file.read_i16()?;
-    print!("{}\n", x.to_string());
+    print!("x = {}\n", x.to_string());
 
     Ok(())
-}
-
-pub fn bytes_to_i16(x: &[u8; 2]) -> i16
-{
-    ((x[1] as i16) <<  8) +
-    ((x[0] as i16) <<  0)
 }
