@@ -10,7 +10,7 @@ fn main() -> io::Result<()>
     r.load();
     print!("{}\n", r.eoh);
     print!("{}\n", r.sample_rate);
-    r.readnext();
+    r.loadheader();
 
 
     Ok(())

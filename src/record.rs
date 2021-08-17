@@ -9,14 +9,16 @@ use std::io::SeekFrom;
 pub struct Record {
     pub filepath: &'static str,
     pub sample_rate: u64,
-    pub eoh: u64
+    pub eoh: u64,
+    pub header:  &'static str
 }
 
 impl Record {
     pub fn new(filepath: &'static str) -> Record {
         let sample_rate = 42;
         let eoh = 0;
-        return Record{ filepath, sample_rate, eoh };
+        let header = "";
+        return Record{ filepath, sample_rate, eoh, header };
     }
 
     pub fn load(&mut self){
@@ -39,6 +41,21 @@ impl Record {
             }
         }
         self.eoh = n;
+    }
+
+    pub fn loadheader(& self){
+        let mut file = File::open(self.filepath).expect("Introuvable");
+        let mut buffer = [0];
+        let mut h = "".to_string();
+        for n in 0..self.eoh {
+            io::Read::read(&mut file, &mut buffer).expect("Introuvable");
+            let s = match str::from_utf8(&buffer){
+                Ok(v) => v,
+                Err(_) => ""
+            };
+            h.push_str(s);
+        }
+        //self.header = &*h;
     }
 
     pub fn readnext(& self){
