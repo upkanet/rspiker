@@ -8,9 +8,10 @@ fn main() -> io::Result<()>
     println!("RSpiker launch");
     let mut r = Record::new("data/40014.raw".to_string());
     r.load();
-    println!("{}\n", r.eoh);
-    println!("{}\n", r.sample_rate);
-    println!("{}\n", r.header);
+    println!("{}",r.sample_rate);
+    println!("{}",r.adczero);
+    println!("{}",r.el);
+    println!("{}",r.streams);
 
 
     Ok(())

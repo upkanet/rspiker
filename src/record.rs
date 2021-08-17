@@ -10,12 +10,15 @@ pub struct Record {
     pub filepath: String,
     pub sample_rate: u64,
     pub eoh: u64,
-    pub header: String
+    pub header: String,
+    pub adczero: u64,
+    pub el: f64,
+    pub streams: u64
 }
 
 impl Record {
     pub fn new(filepath: String) -> Record {
-        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string() };
+        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0 };
     }
 
     pub fn load(&mut self){
@@ -57,6 +60,32 @@ impl Record {
             h.push_str(s);
         }
         self.header = h;
+        println!("{}", self.header);
+        self.parseheader();
+    }
+
+    pub fn parseheader(&mut self){
+        self.sample_rate = self.headerfieldvalue(3).parse().unwrap();
+        self.adczero = self.headerfieldvalue(4).parse().unwrap();
+        let els = self.headerfieldvalue(5);
+        let els = els[0..6].to_string();
+        self.el = els.parse().unwrap();
+        let streamss = self.headerfieldvalue(6);
+        let s: Vec<&str> = streamss.split(";").collect();
+        let streams = s.len();
+        self.streams = streams as u64;
+    }
+
+    fn headerfieldvalue(& self,line: usize) -> String{
+        let h = &self.header;
+        let c: Vec<&str> = h.split("\n").collect();
+        let l = c[line];
+        let pos = match l.find("="){
+            Some(v) => v + 2,
+            None => 0
+        };
+        let val = l[pos..l.len()-1].to_string();
+        return val;
     }
 
     pub fn _readnext(& self){
