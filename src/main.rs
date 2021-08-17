@@ -12,6 +12,7 @@ fn main() -> io::Result<()>
     println!("{}",r.adczero);
     println!("{}",r.el);
     println!("{}",r.streams);
+    println!("{:?}",r.electrodes);
 
 
     Ok(())

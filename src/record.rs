@@ -13,17 +13,20 @@ pub struct Record {
     pub header: String,
     pub adczero: u64,
     pub el: f64,
-    pub streams: u64
+    pub streams: u64,
+    pub electrodes: Vec<Vec<f64>>
 }
 
 impl Record {
     pub fn new(filepath: String) -> Record {
-        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0 };
+        let electrodes: Vec<Vec<f64>> = Vec::new();
+        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes };
     }
 
     pub fn load(&mut self){
         self.findeoh();
         self.loadheader();
+        self.loaddata();
     }
 
     pub fn findeoh(&mut self)
@@ -96,5 +99,23 @@ impl Record {
         print!("x = {}\n", x.to_string());
         let x: i16 = file.read_i16().expect("Introuvable");
         print!("x = {}\n", x.to_string());
+    }
+
+    pub fn loaddata(&mut self){
+        for _n in 0..self.streams {
+            self.electrodes.push(Vec::new());
+        }
+
+        let mut file = File::open(&self.filepath).expect("Introuvable");
+        io::Seek::seek(&mut file, SeekFrom::Start(self.eoh+5)).expect("No");
+        let mut eof = false;
+        while !eof {
+            for n in 0..self.streams {
+                match file.read_i16(){
+                    Ok(v) => self.electrodes[n as usize].push(v as f64),
+                    Err(_) => eof = true
+                };
+            }
+        }
     }
 }
