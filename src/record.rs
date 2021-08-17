@@ -15,14 +15,12 @@ pub struct Record {
 
 impl Record {
     pub fn new(filepath: String) -> Record {
-        let sample_rate = 42;
-        let eoh = 0;
-        let header = "".to_string();
-        return Record{ filepath , sample_rate, eoh, header };
+        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string() };
     }
 
     pub fn load(&mut self){
         self.findeoh();
+        self.loadheader();
     }
 
     pub fn findeoh(&mut self)
@@ -46,7 +44,7 @@ impl Record {
         self.eoh = n;
     }
 
-    pub fn loadheader(& self){
+    pub fn loadheader(&mut self){
         let mut file = File::open(&self.filepath).expect("Introuvable");
         let mut buffer = [0];
         let mut h = "".to_string();
@@ -58,7 +56,7 @@ impl Record {
             };
             h.push_str(s);
         }
-        //self.header.push_str(&h);
+        self.header = h;
     }
 
     pub fn _readnext(& self){
