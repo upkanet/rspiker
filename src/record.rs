@@ -14,13 +14,15 @@ pub struct Record {
     pub adczero: u64,
     pub el: f64,
     pub streams: u64,
-    pub electrodes: Vec<Vec<f64>>
+    pub electrodes: Vec<Vec<f64>>,
+    pub felectrodes: Vec<Vec<f64>>
 }
 
 impl Record {
     pub fn new(filepath: String) -> Record {
         let electrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes };
+        let felectrodes: Vec<Vec<f64>> = Vec::new();
+        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes, felectrodes };
     }
 
     pub fn load(&mut self){
@@ -63,7 +65,7 @@ impl Record {
             h.push_str(s);
         }
         self.header = h;
-        println!("{}", self.header);
+        //println!("{}", self.header);
         self.parseheader();
     }
 
@@ -91,16 +93,6 @@ impl Record {
         return val;
     }
 
-    pub fn _readnext(& self){
-        let mut file = File::open(&self.filepath).expect("Introuvable");
-        io::Seek::seek(&mut file, SeekFrom::Start(self.eoh+5)).expect("No");
-        
-        let x: i16 = file.read_i16().expect("Introuvable");
-        print!("x = {}\n", x.to_string());
-        let x: i16 = file.read_i16().expect("Introuvable");
-        print!("x = {}\n", x.to_string());
-    }
-
     pub fn loaddata(&mut self){
         for _n in 0..self.streams {
             self.electrodes.push(Vec::new());
@@ -112,10 +104,37 @@ impl Record {
         while !eof {
             for n in 0..self.streams {
                 match file.read_i16(){
-                    Ok(v) => self.electrodes[n as usize].push(v as f64),
+                    Ok(v) => self.electrodes[n as usize].push(v as f64 * self.el),
                     Err(_) => eof = true
                 };
             }
+        }
+    }
+
+    fn efilter(&mut self,fc: u64, n: usize){
+        println!("High Pass Filtering at {}Hz on electrode #{}",fc,n);
+
+        let pi = std::f64::consts::PI;
+        let rc = 1.0/(2.0 * pi * fc as f64);
+        let dt = 1.0 / self.sample_rate as f64;
+        let alpha = rc / (rc + dt);
+
+        let mut fe = self.electrodes[n].to_vec();
+
+        for k in 1..fe.len() {
+            let x = self.electrodes[n][k-1];
+            let ykm1 = fe[k-1];
+            let xkm1 = self.electrodes[n][k-1];
+            let yk = alpha * (ykm1 + x - xkm1);
+            fe[k] = yk;
+        }
+
+        self.felectrodes.push(fe);
+    }
+
+    pub fn filter(&mut self,fc: u64){
+        for n in 0..self.streams{
+            self.efilter(fc,n as usize);
         }
     }
 }
