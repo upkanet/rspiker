@@ -1,5 +1,6 @@
 extern crate file_utils;
 use file_utils::read::Read;
+use draw::*;
 
 use std::io;
 use std::fs::File;
@@ -15,14 +16,16 @@ pub struct Record {
     pub el: f64,
     pub streams: u64,
     pub electrodes: Vec<Vec<f64>>,
-    pub felectrodes: Vec<Vec<f64>>
+    pub felectrodes: Vec<Vec<f64>>,
+    pub selectrodes: Vec<Vec<f64>>
 }
 
 impl Record {
     pub fn new(filepath: String) -> Record {
         let electrodes: Vec<Vec<f64>> = Vec::new();
         let felectrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes, felectrodes };
+        let selectrodes: Vec<Vec<f64>> = Vec::new();
+        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes, felectrodes, selectrodes };
     }
 
     pub fn load(&mut self){
@@ -136,5 +139,105 @@ impl Record {
         for n in 0..self.streams{
             self.efilter(fc,n as usize);
         }
+    }
+
+    fn espiker(&mut self, threshold: f64, n: usize){
+        println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
+        let avg = match mean(&self.felectrodes[n].to_vec()){
+            Some(v) => v,
+            None => 0.0
+        };
+        let stddev = match std_deviation(&self.felectrodes[n].to_vec()){
+            Some(v) => v,
+            None => 0.0
+        };
+
+        let mut se = self.felectrodes[n].to_vec();
+
+        se[0] = 0.0;
+
+        for k in 1..se.len() {
+            // Y m-1
+            let ym1 = self.felectrodes[n][k-1];
+            let y = self.felectrodes[n][k];
+            let tup = avg + threshold * stddev;
+            let tdown = avg - threshold * stddev;
+
+            // Asc front
+            if (ym1 <= tup) && (y > tup){
+                se[k] = 1.0;
+            }
+            // Desc front
+            else if (ym1 <= tdown) && (y < tdown){
+                se[k] = 1.0;
+            }
+            else{
+                se[k] = 0.0;
+            }
+        }
+
+        self.selectrodes.push(se);
+
+    }
+
+    pub fn spiker(&mut self, threshold: f64){
+        for n in 0..self.streams{
+            self.espiker(threshold,n as usize);
+        }
+    }
+
+    fn eraster(&self,timewidth: u64, n: usize){
+        println!("Saving RasterPlot at {} s timewidth on electrode #{}",timewidth,n);
+        let data = &self.selectrodes[n];
+        println!("selectrodes[{}] data length{}",n,data.len());
+        let tw = timewidth as f64;
+        let th = data.len() as f64 / self.sample_rate as f64 / tw;
+        let w = 1000 as f64;
+        let h = 1000 as f64;
+        let mut canvas = Canvas::new(w as u32, h as u32);
+        for k in 0..data.len(){
+            if data[k] > 0.0 {
+                let t = k as f64 / self.sample_rate as f64;
+                let x = t%tw / tw;
+                let y = t/tw / th;
+                let rect = Drawing::new()
+                    .with_shape(Shape::Rectangle {
+                        width: 2,
+                        height: 20
+                    })
+                    .with_xy((x * w) as f32, (y * h) as f32);
+                canvas.display_list.add(rect);
+            }
+        }
+        render::save(&canvas, "test.svg", SvgRenderer::new()).expect("Failed to save");
+    }
+
+    pub fn raster(&self, timewidth: u64){
+        self.eraster(timewidth, 174);
+    }
+}
+
+fn mean(data: &[f64]) -> Option<f64> {
+    let sum = data.iter().sum::<f64>() as f64;
+    let count = data.len();
+
+    match count {
+        positive if positive > 0 => Some(sum / count as f64),
+        _ => None,
+    }
+}
+
+fn std_deviation(data: &[f64]) -> Option<f64> {
+    match (mean(data), data.len()) {
+        (Some(data_mean), count) if count > 0 => {
+            let variance = data.iter().map(|value| {
+                let diff = data_mean - (*value as f64);
+
+                diff * diff
+            }).sum::<f64>() / count as f64;
+
+            Some(variance.sqrt())
+        },
+        _ => None
     }
 }
