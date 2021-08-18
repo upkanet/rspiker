@@ -39,8 +39,8 @@
 <script>
     var layoutBlack = { paper_bgcolor: 'black', plot_bgcolor: 'black', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
-    function plotEdata(electrode,arrName,srateName,plotName,title,ticksuffix){
-        $.getJSON(`/electrode/${electrode}`, function (el) {
+    function plotEdata(electrode,mod,srateName,plotName,title,ticksuffix){
+        $.getJSON(`/electrode/${mod}/${electrode}`, function (el) {
             console.log(el);
             var data = el;
             //var sample_rate = el[srateName];

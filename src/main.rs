@@ -13,10 +13,14 @@ use std::time::Instant;
 mod record;
 use record::Record;
 
-#[get("/electrode/<e>")]
-fn electrode(r: State<Record>, e: String) -> String {
-    let ne:usize = e.parse().unwrap();
-    let el = r.electrodes[ne].to_vec();
+#[get("/electrode/<m>/<e>")]
+fn electrode(r: State<Record>, m: String, e: usize) -> String {
+    let el = match m.as_str() {
+        "n" => r.electrodes[e].to_vec(),
+        "f" => r.felectrodes[e].to_vec(),
+        "s" => r.selectrodes[e].to_vec(),
+        &_ => vec![]
+    };
     let j = json!(el);
     return j.to_string();
 }
@@ -41,6 +45,8 @@ fn main() {
     println!("Loading data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
+    r.filter(200);
+    println!("Filtering - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
         .mount("/", routes![index,electrode,js])
