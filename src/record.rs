@@ -152,6 +152,8 @@ impl Record {
             None => 0.0
         };
 
+        println!("{} {}",avg,stddev);
+
         let mut se = self.felectrodes[n].to_vec();
 
         se[0] = 0.0;
@@ -168,12 +170,14 @@ impl Record {
                 se[k] = 1.0;
             }
             // Desc front
-            else if (ym1 <= tdown) && (y < tdown){
+            else if (ym1 >= tdown) && (y < tdown){
                 se[k] = 1.0;
             }
             else{
                 se[k] = 0.0;
             }
+
+            //println!("{}",se[k]);
         }
 
         self.selectrodes.push(se);
