@@ -48,7 +48,6 @@ impl Record {
     }
 
     pub fn load(&mut self){
-        println!("{}",self.config().fc);
         self.findeoh();
         self.loadheader();
         self.loaddata();
@@ -122,20 +121,26 @@ impl Record {
 
         let mut file = File::open(&self.filepath).expect("Introuvable");
         io::Seek::seek(&mut file, SeekFrom::Start(self.eoh+5)).expect("No");
+        let metadata = file.metadata().expect("No");
+        let rows = metadata.len() / 2 / self.streams;
         let mut eof = false;
+        let mut row = 0;
+        progress(true, row, rows);
         while !eof {
             for n in 0..self.streams {
                 match file.read_i16(){
-                    Ok(v) => self.electrodes[n as usize].push(v as f64 * self.el),
+                    Ok(v) => self.electrodes[n as usize].push(v as f64),
                     Err(_) => eof = true
                 };
             }
+            row += 1;
+            progress(false, row, rows);
         }
     }
 
     pub fn efilter(&self,n: usize) -> Vec<f64>{
         let fc = self.config().fc;
-        println!("High Pass Filtering at {}Hz on electrode #{}",fc,n);
+        //println!("High Pass Filtering at {}Hz on electrode #{}",fc,n);
 
         let pi = std::f64::consts::PI;
         let rc = 1.0/(2.0 * pi * fc as f64);
@@ -156,14 +161,16 @@ impl Record {
     }
 
     pub fn filter(&mut self){
+        progress(true,0,self.streams);
         for n in 0..self.streams{
             self.felectrodes.push(self.efilter(n as usize));
+            progress(false,n,self.streams);
         }
     }
 
     pub fn espiker(&self, n: usize) -> Vec<f64>{
         let threshold = self.config().threshold;
-        println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
+        //println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
         let avg = match mean(&self.felectrodes[n].to_vec()){
             Some(v) => v,
             None => 0.0
@@ -265,4 +272,18 @@ fn std_deviation(data: &[f64]) -> Option<f64> {
         },
         _ => None
     }
+}
+
+pub fn progress(first: bool, n:u64,t:u64){
+    if first{
+        print!("{}",(1..100).map(|_| "-").collect::<String>());
+    }
+    else {
+        print!("\x1B[F");
+        let p = 100 * n / t;
+        for _k in 0..p{
+            print!("■");
+        }
+    }
+    print!("\n");
 }
