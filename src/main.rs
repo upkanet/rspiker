@@ -2,21 +2,36 @@
 
 #[macro_use] extern crate rocket;
 use rocket::State;
+use rocket::response::NamedFile;
+use rocket::response::status::NotFound;
+use std::path::Path;
+
+use serde_json::json;
 
 use std::time::Instant;
 
 mod record;
 use record::Record;
 
-#[get("/electrode/len/<e>")]
-fn hello(r: State<Record>, e: String) -> String {
+#[get("/electrode/<e>")]
+fn electrode(r: State<Record>, e: String) -> String {
     let ne:usize = e.parse().unwrap();
-    return r.electrodes[ne].len().to_string();
+    let el = r.electrodes[ne].to_vec();
+    let j = json!(el);
+    return j.to_string();
+}
+
+#[get("/js/<f>")]
+fn js(f: String) -> Result<NamedFile, NotFound<String>> {
+    let path = Path::new("js/").join(f);
+    println!("{:?}",path);
+    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
 }
 
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn index() -> Result<NamedFile, NotFound<String>> {
+    let path = Path::new("public/index.htm");
+    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
 }
 
 fn main() {
@@ -28,7 +43,7 @@ fn main() {
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,hello])
+        .mount("/", routes![index,electrode,js])
         .launch();
 }
 
