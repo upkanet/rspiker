@@ -50,6 +50,8 @@ impl Record {
     pub fn load(&mut self){
         self.findeoh();
         self.loadheader();
+        self.felectrodes = vec![vec![0.0];self.streams as usize];
+        self.selectrodes = vec![vec![0.0];self.streams as usize];
         self.loaddata();
     }
 
@@ -163,7 +165,7 @@ impl Record {
     pub fn filter(&mut self){
         progress(true,0,self.streams);
         for n in 0..self.streams{
-            self.felectrodes.push(self.efilter(n as usize));
+            self.felectrodes[n as usize] = self.efilter(n as usize);
             progress(false,n,self.streams);
         }
     }
@@ -179,8 +181,6 @@ impl Record {
             Some(v) => v,
             None => 0.0
         };
-
-        println!("{} {}",avg,stddev);
 
         let mut se = self.felectrodes[n].to_vec();
 
@@ -212,7 +212,7 @@ impl Record {
 
     pub fn spiker(&mut self){
         for n in 0..self.streams{
-            self.selectrodes.push(self.espiker(n as usize));
+            self.selectrodes[n as usize] = self.espiker(n as usize);
         }
     }
 

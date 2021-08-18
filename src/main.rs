@@ -13,9 +13,16 @@ use std::time::Instant;
 mod record;
 use record::Record;
 
+#[get("/electrode/e/<n>")]
+fn electrode(r: State<Record>, n: usize) -> String {
+    let el = r.electrodes[n].to_vec();
+    let j = json!(el);
+    return j.to_string();
+}
+
 #[get("/electrode/f/<n>")]
 fn felectrode(r: State<Record>, n: usize) -> String {
-    let el = r.felectrodes[n].to_vec();
+    let el = r.efilter(n);
     let j = json!(el);
     return j.to_string();
 }
@@ -23,7 +30,7 @@ fn felectrode(r: State<Record>, n: usize) -> String {
 #[get("/electrode/s/<n>")]
 fn selectrode(r: State<Record>, n: usize) -> String {
     let mut r2 = r.clone();
-    r2.filter();
+    r2.felectrodes[n as usize] = r2.efilter(n);
     let el = r2.espiker(n);
     let j = json!(el);
     return j.to_string();
@@ -44,16 +51,13 @@ fn index() -> Result<NamedFile, NotFound<String>> {
 
 fn main() {
     println!("RSpiker launch");
-    let mut r = Record::new("data/0.raw".to_string());
+    let mut r = Record::new("data/1.raw".to_string());
     let now = Instant::now();
     println!("Loading data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
-    println!("Filtering...");
-    r.filter();
-    println!("Filtering - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,js,felectrode,selectrode])
+        .mount("/", routes![index,js,electrode,felectrode,selectrode])
         .launch();
 }
