@@ -1,4 +1,5 @@
 extern crate file_utils;
+extern crate serde;
 use file_utils::read::Read;
 use draw::*;
 
@@ -7,6 +8,9 @@ use std::fs::File;
 use std::str;
 use std::io::SeekFrom;
 
+use serde::Deserialize;
+
+#[derive(Clone)]
 pub struct Record {
     pub filepath: String,
     pub sample_rate: u64,
@@ -20,6 +24,13 @@ pub struct Record {
     pub selectrodes: Vec<Vec<f64>>
 }
 
+#[derive(Deserialize)]
+pub struct Config {
+    fc: u64,
+    threshold: f64,
+    timewidth: u64
+}
+
 impl Record {
     pub fn new(filepath: String) -> Record {
         let electrodes: Vec<Vec<f64>> = Vec::new();
@@ -28,7 +39,16 @@ impl Record {
         return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes, felectrodes, selectrodes };
     }
 
+    pub fn config(&self) -> Config{
+        let mut file = File::open("config.json").expect("Unable to open the file");
+        let mut contents = String::new();
+        io::Read::read_to_string(&mut file, &mut contents).expect("Unable to read the file");
+        let c:Config = serde_json::from_str(&contents).expect("JSON was not well-formatted");
+        return c;
+    }
+
     pub fn load(&mut self){
+        println!("{}",self.config().fc);
         self.findeoh();
         self.loadheader();
         self.loaddata();
@@ -68,7 +88,6 @@ impl Record {
             h.push_str(s);
         }
         self.header = h;
-        //println!("{}", self.header);
         self.parseheader();
     }
 
@@ -114,7 +133,8 @@ impl Record {
         }
     }
 
-    fn efilter(&mut self,fc: u64, n: usize){
+    pub fn efilter(&self,n: usize) -> Vec<f64>{
+        let fc = self.config().fc;
         println!("High Pass Filtering at {}Hz on electrode #{}",fc,n);
 
         let pi = std::f64::consts::PI;
@@ -132,16 +152,17 @@ impl Record {
             fe[k] = yk;
         }
 
-        self.felectrodes.push(fe);
+        return fe;
     }
 
-    pub fn filter(&mut self,fc: u64){
+    pub fn filter(&mut self){
         for n in 0..self.streams{
-            self.efilter(fc,n as usize);
+            self.felectrodes.push(self.efilter(n as usize));
         }
     }
 
-    fn espiker(&mut self, threshold: f64, n: usize){
+    pub fn espiker(&self, n: usize) -> Vec<f64>{
+        let threshold = self.config().threshold;
         println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
         let avg = match mean(&self.felectrodes[n].to_vec()){
             Some(v) => v,
@@ -176,21 +197,20 @@ impl Record {
             else{
                 se[k] = 0.0;
             }
-
-            //println!("{}",se[k]);
         }
 
-        self.selectrodes.push(se);
+        return se;
 
     }
 
-    pub fn spiker(&mut self, threshold: f64){
+    pub fn spiker(&mut self){
         for n in 0..self.streams{
-            self.espiker(threshold,n as usize);
+            self.selectrodes.push(self.espiker(n as usize));
         }
     }
 
-    fn eraster(&self,timewidth: u64, n: usize){
+    fn eraster(&self, n: usize){
+        let timewidth = self.config().timewidth;
         println!("Saving RasterPlot at {} s timewidth on electrode #{}",timewidth,n);
         let data = &self.selectrodes[n];
         println!("selectrodes[{}] data length{}",n,data.len());
@@ -216,8 +236,9 @@ impl Record {
         render::save(&canvas, "test.svg", SvgRenderer::new()).expect("Failed to save");
     }
 
-    pub fn raster(&self, timewidth: u64){
-        self.eraster(timewidth, 174);
+    pub fn raster(&self){
+        //ToDo
+        self.eraster(174);
     }
 }
 

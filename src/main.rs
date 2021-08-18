@@ -13,14 +13,26 @@ use std::time::Instant;
 mod record;
 use record::Record;
 
-#[get("/electrode/<m>/<e>")]
-fn electrode(r: State<Record>, m: String, e: usize) -> String {
-    let el = match m.as_str() {
-        "n" => r.electrodes[e].to_vec(),
-        "f" => r.felectrodes[e].to_vec(),
-        "s" => r.selectrodes[e].to_vec(),
-        &_ => vec![]
-    };
+#[get("/electrode/n/<n>")]
+fn electrode(r: State<Record>, n: usize) -> String {
+    let el = r.electrodes[n].to_vec();
+    let j = json!(el);
+    return j.to_string();
+}
+
+#[get("/electrode/f/<n>")]
+fn felectrode(r: State<Record>, n: usize) -> String {
+    let r2 = r.clone();
+    let el = r2.efilter(n);
+    let j = json!(el);
+    return j.to_string();
+}
+
+#[get("/electrode/s/<n>")]
+fn selectrode(r: State<Record>, n: usize) -> String {
+    let mut r2 = r.clone();
+    r2.filter();
+    let el = r2.espiker(n);
     let j = json!(el);
     return j.to_string();
 }
@@ -45,12 +57,8 @@ fn main() {
     println!("Loading data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
-    r.filter(200);
-    println!("Filtering - Time elapsed : {}", now.elapsed().as_secs());
-    r.spiker(3.0);
-    println!("Spike Sorting - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,electrode,js])
+        .mount("/", routes![index,js,electrode,felectrode,selectrode])
         .launch();
 }

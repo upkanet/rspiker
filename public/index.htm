@@ -20,15 +20,15 @@
 <script>
     var layoutBlack = { paper_bgcolor: 'black', plot_bgcolor: 'black', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
-    function plotEdata(electrode,mod,srateName,plotName,title,ticksuffix){
+    function plotEdata(electrode,mod){
         $.getJSON(`/electrode/${mod}/${electrode}`, function (el) {
             console.log(el);
             var data = el;
-            //var sample_rate = el[srateName];
             var sample_rate = 20000;
+            var plotName = "gElectrode";
             var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
-            layoutBlack.xaxis.title = title;
-            layoutBlack.xaxis.ticksuffix = ticksuffix;
+            /*layoutBlack.xaxis.title = title;
+            layoutBlack.xaxis.ticksuffix = ticksuffix;*/
             Plotly.newPlot(plotName, [d], layoutBlack);
         });
     }
