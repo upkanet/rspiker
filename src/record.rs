@@ -125,7 +125,7 @@ impl Record {
         let mut fe = self.electrodes[n].to_vec();
 
         for k in 1..fe.len() {
-            let x = self.electrodes[n][k-1];
+            let x = self.electrodes[n][k];
             let ykm1 = fe[k-1];
             let xkm1 = self.electrodes[n][k-1];
             let yk = alpha * (ykm1 + x - xkm1);

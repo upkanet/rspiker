@@ -47,6 +47,8 @@ fn main() {
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     r.filter(200);
     println!("Filtering - Time elapsed : {}", now.elapsed().as_secs());
+    r.spiker(-4.2);
+    println!("Spike Sorting - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
         .mount("/", routes![index,electrode,js])
