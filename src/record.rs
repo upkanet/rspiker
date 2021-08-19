@@ -128,7 +128,6 @@ impl Record {
         let bytes = metadata.len() - self.datastart; //File length minus header
         let mut buffer = vec!(0;bytes as usize);
         file.read(&mut buffer).expect("Pb");
-        println!("{}",buffer.len());
         self.bin = buffer;
         self.bin2electrode();
     }

@@ -34,35 +34,45 @@
     }
     function plotERaster(electrode,timewidth){
         $.getJSON(`/electrode/s/${electrode}`, function (data) {
-            console.log(data);
+            /*const reducer = (accumulator, currentValue) => accumulator + currentValue;
+            console.log(data.reduce(reducer) + " spikes");*/
+
             var sample_rate = 20000;
-            var w = 1000;
-            var h = 1000;
+            var w = 70;
+            var h = 55;
             var tw = timewidth;
             var th = Math.round((data.length / sample_rate) / tw);
+            var sh = h / th * 0.8;
 
-            var canvas = document.getElementById("gRaster");
+            var canvas = document.getElementById("raster_"+electrode);
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle="blue";
+            ctx.fillStyle="green";
 
             data.forEach((v,k) => {
                 if(v > 0){
                     var t = k / sample_rate;
                     var x = t%tw / tw;
                     var y = Math.round(t/tw) / th;
-                    ctx.fillRect(x * w,y * h,2,20);
-                    console.log(x * w,y * h);
+                    ctx.fillRect(x * w,y * h,1,sh);
                 }
             });
 
         });
     }
 
+    function raster(timewidth = 2){
+        //var n = 175;
+        for(var n = 0; n < 256; n++){
+            $('#raster').append(`<canvas id="raster_${n}" width="70" height="55"></canvas>`);
+            plotERaster(n,timewidth);
+        }
+    }
+
 </script>
 
 <body>
-    <div id="gElectrode" style="width:100%;height:100%;"></div>
-    <canvas id="gRaster"  width="1000" height="1000"></canvas>
+    <div id="gElectrode" style="width:100%;height:100%;display: none;"></div>
+    <div id="raster" style="width:1120px;"></div>
 </body>
 
 </html>

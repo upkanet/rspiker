@@ -1,5 +1,5 @@
 {
     "fc": 200,
-    "threshold": 3,
+    "threshold": 1.4,
     "timewidth": 2
 }
