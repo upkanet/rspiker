@@ -49,6 +49,12 @@ fn config() -> Result<NamedFile, NotFound<String>> {
     NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
 }
 
+#[get("/favicon.ico")]
+fn favicon() -> Result<NamedFile, NotFound<String>> {
+    let path = Path::new("public/favicon.ico");
+    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+}
+
 #[get("/")]
 fn index() -> Result<NamedFile, NotFound<String>> {
     let path = Path::new("public/index.htm");
@@ -64,6 +70,6 @@ fn main() {
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,js,config,electrode,felectrode,selectrode])
+        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode])
         .launch();
 }

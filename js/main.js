@@ -1,0 +1,105 @@
+//Nav
+function tshow(e){
+    var tn = $(e).data('tab');
+    show(tn);
+}
+
+function show(tabname){
+    $('.nav-link').each((i,e)=>{
+        $(e).removeClass('active');
+    });
+    $(`.nav-link[data-tab='${tabname}']`).addClass('active');
+    $('.tab').each((i,e)=>{
+        $(e).removeClass('tab-active');
+    });
+    $(`#${tabname}`).addClass('tab-active');
+}
+
+//Graphics
+function initGrid(){
+    initGridName("raw");
+    initGridName("filtered");
+    populateGridName("raw");
+}
+
+function initGridName(name){
+    var raw = $(`#${name}`);
+    raw.html(`<div class="container-fluid"></div>`);
+    var rawc = raw.children().first();
+    for(var i = 0; i < 256;i++){
+        if(i%16 == 0){
+            rawc.append(`<div class="row"></div>`);
+            var rawcr = rawc.children().last();
+        }
+        rawcr.append(`<div class="col test"><div id="g-${name}-${i}" style="width:100%;height:100%;display: none;"></div></div>`);
+    }
+}
+
+function populateGridName(name){
+    for(var i = 0; i < 256;i++){
+        plotEdata(`g-${name}-${i}`,"e",i);
+    }
+}
+
+var layoutBlack = { paper_bgcolor: 'black', plot_bgcolor: 'black', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
+
+function plotEdata(graph,mod,electrode){
+    $.getJSON(`/electrode/${mod}/${electrode}`, function (data) {
+        var sample_rate = 20000;
+        var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
+        layoutBlack.xaxis.title = electrode;
+        /*layoutBlack.xaxis.ticksuffix = ticksuffix;*/
+        Plotly.newPlot(graph, [d], layoutBlack);
+    });
+}
+function plotERaster(electrode,timewidth){
+    $.getJSON(`/electrode/s/${electrode}`, function (data) {
+        /*const reducer = (accumulator, currentValue) => accumulator + currentValue;
+        console.log(data.reduce(reducer) + " spikes");*/
+
+        var sample_rate = 20000;
+        var w = 70;
+        var h = 55;
+        var tw = timewidth;
+        var th = Math.round((data.length / sample_rate) / tw);
+        var sh = h / th * 0.8;
+
+        var canvas = document.getElementById("raster_"+electrode);
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle="green";
+
+        data.forEach((v,k) => {
+            if(v > 0){
+                var t = k / sample_rate;
+                var x = t%tw / tw;
+                var y = Math.round(t/tw) / th;
+                ctx.fillRect(x * w,y * h,1,sh);
+            }
+        });
+
+    });
+}
+
+function raster(timewidth = 2){
+    var config = getConfig();
+    console.log(config);
+    for(var n = 0; n < 256; n++){
+        var el = config.map_mea[n];
+        $('#raster').append(`<canvas id="raster_${el}" width="70" height="55"></canvas>`);
+    }
+    for(var n = 0; n < 256; n++){
+        plotERaster(n,timewidth);
+    }
+}
+
+function getConfig(){
+    var config = 0;
+    $.ajax({
+        url: '/config',
+        async: false
+    }).done(function(data){
+        config = data;
+    });
+    return config;
+}
+

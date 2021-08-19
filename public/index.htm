@@ -3,91 +3,67 @@
 <head>
     <title>Axorus - Spiker</title>
 </head>
-<style>
-    body {
-        background-color: black;
-        font-family: Arial, Helvetica, sans-serif;
-        color: white;
-        margin: 0;
-    }
-
-    a {
-        color: white;
-    }
-</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.0/dist/css/bootstrap-dark.min.css" integrity="sha256-kbkRO+z3M7RfAEv8nS4CXvEWInRxgMkPycqEr+QW0+0=" crossorigin="anonymous">
 <script src="js/jquery3.5.1.min.js"></script>
 <script src="js/plotly-latest.min.js"></script>
-<script>
-    var layoutBlack = { paper_bgcolor: 'black', plot_bgcolor: 'black', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
-
-    function plotEdata(electrode,mod){
-        $.getJSON(`/electrode/${mod}/${electrode}`, function (el) {
-            console.log(el);
-            var data = el;
-            var sample_rate = 20000;
-            var plotName = "gElectrode";
-            var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
-            /*layoutBlack.xaxis.title = title;
-            layoutBlack.xaxis.ticksuffix = ticksuffix;*/
-            Plotly.newPlot(plotName, [d], layoutBlack);
-        });
-    }
-    function plotERaster(electrode,timewidth){
-        $.getJSON(`/electrode/s/${electrode}`, function (data) {
-            /*const reducer = (accumulator, currentValue) => accumulator + currentValue;
-            console.log(data.reduce(reducer) + " spikes");*/
-
-            var sample_rate = 20000;
-            var w = 70;
-            var h = 55;
-            var tw = timewidth;
-            var th = Math.round((data.length / sample_rate) / tw);
-            var sh = h / th * 0.8;
-
-            var canvas = document.getElementById("raster_"+electrode);
-            var ctx = canvas.getContext('2d');
-            ctx.fillStyle="green";
-
-            data.forEach((v,k) => {
-                if(v > 0){
-                    var t = k / sample_rate;
-                    var x = t%tw / tw;
-                    var y = Math.round(t/tw) / th;
-                    ctx.fillRect(x * w,y * h,1,sh);
-                }
-            });
-
-        });
-    }
-    
-    function raster(timewidth = 2){
-        var config = getConfig();
-        console.log(config);
-        for(var n = 0; n < 256; n++){
-            var el = config.map_mea[n];
-            $('#raster').append(`<canvas id="raster_${el}" width="70" height="55"></canvas>`);
-        }
-        for(var n = 0; n < 256; n++){
-            plotERaster(n,timewidth);
-        }
+<script src="js/main.js"></script>
+<style>
+    .tab{
+        display: none;
     }
 
-    function getConfig(){
-        var config = 0;
-        $.ajax({
-            url: '/config',
-            async: false
-        }).done(function(data){
-            config = data;
-        });
-        return config;
+    .tab-active{
+        display: block;
     }
 
-</script>
+    .nav-link{
+        cursor: pointer;
+    }
+
+    .test{
+        border: 1px solid red;
+        height: 50px;
+    }
+</style>
 
 <body>
+    <ul class="nav nav-tabs nav-justified">
+        <li class="nav-item">
+            <a class="nav-link active" data-tab="raw" onclick="javascript:tshow(this);">Raw</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);">Config</a>
+        </li>
+    </ul>
+    <div id="slider" class="container">
+        <div class="row">
+            <div class="col-10">
+                <br>
+                <input type="range" class="form-range" min="0" max="5" value="0">
+            </div>
+            <div class="col-2">
+                <br>
+                <button type="button" class="btn btn-primary">Electrode #</button>
+            </div>
+        </div>
+    </div>
+    <div class="tab tab-active" id="raw"></div>
+    <div class="tab" id="raw_el"></div>
+    <div class="tab" id="filtered">Filtered</div>
+    <div class="tab" id="filtered_el">Filtered El</div>
+    <div class="tab" id="raster">Raster</div>
+    <div class="tab" id="raster_el">Raster El</div>
+    <div class="tab" id="config">Config</div>
+
     <div id="gElectrode" style="width:100%;height:100%;display: none;"></div>
-    <div id="raster" style="width:1120px;"></div>
+    <div id="graster" style="width:1120px;"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
 </body>
 
 </html>
