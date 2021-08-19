@@ -21,7 +21,6 @@ pub struct Record {
     pub adczero: u64,
     pub el: f64,
     pub streams: u64,
-    pub bin: Vec<u8>,
     pub electrodes: Vec<Vec<f64>>,
     pub felectrodes: Vec<Vec<f64>>,
     pub selectrodes: Vec<Vec<f64>>
@@ -36,11 +35,10 @@ pub struct Config {
 
 impl Record {
     pub fn new(filepath: String) -> Record {
-        let bin: Vec<u8> = Vec::new();
         let electrodes: Vec<Vec<f64>> = Vec::new();
         let felectrodes: Vec<Vec<f64>> = Vec::new();
         let selectrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0,bin, electrodes, felectrodes, selectrodes };
+        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes, felectrodes, selectrodes };
     }
 
     pub fn config(&self) -> Config{
@@ -128,16 +126,15 @@ impl Record {
         let bytes = metadata.len() - self.datastart; //File length minus header
         let mut buffer = vec!(0;bytes as usize);
         file.read(&mut buffer).expect("Pb");
-        self.bin = buffer;
-        self.bin2electrode();
+        self.bin2electrode(buffer);
     }
     
-    fn bin2electrode(&mut self){
+    fn bin2electrode(&mut self, bin: Vec<u8>){
         self.electrodes = vec![vec![0.0];self.streams as usize];
         let mut k = 0;
-        while k <= self.bin.len()/2 {
+        while k <= bin.len()/2 {
             for n in 0..self.streams {
-                self.electrodes[n as usize].push((((self.bin[k] as i16) << 8) | self.bin[k+1] as i16) as f64);
+                self.electrodes[n as usize].push((((bin[k] as i16) << 8) | bin[k+1] as i16) as f64);
                 k += 2;
             }
         }
