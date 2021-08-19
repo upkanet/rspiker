@@ -1,11 +1,12 @@
 extern crate file_utils;
 extern crate serde;
-use file_utils::read::Read;
 use draw::*;
 
 use std::io;
 use std::fs::File;
 use std::str;
+use std::io::Read;
+use std::io::Seek;
 use std::io::SeekFrom;
 
 use serde::Deserialize;
@@ -15,11 +16,12 @@ pub struct Record {
     pub filepath: String,
     pub sample_rate: u64,
     pub eoh: u64,
+    pub datastart: u64,
     pub header: String,
     pub adczero: u64,
     pub el: f64,
     pub streams: u64,
-    pub ebin: String,
+    pub bin: Vec<u8>,
     pub electrodes: Vec<Vec<f64>>,
     pub felectrodes: Vec<Vec<f64>>,
     pub selectrodes: Vec<Vec<f64>>
@@ -34,10 +36,11 @@ pub struct Config {
 
 impl Record {
     pub fn new(filepath: String) -> Record {
+        let bin: Vec<u8> = Vec::new();
         let electrodes: Vec<Vec<f64>> = Vec::new();
         let felectrodes: Vec<Vec<f64>> = Vec::new();
         let selectrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0,ebin: "".to_string(), electrodes, felectrodes, selectrodes };
+        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0,bin, electrodes, felectrodes, selectrodes };
     }
 
     pub fn config(&self) -> Config{
@@ -75,6 +78,7 @@ impl Record {
             }
         }
         self.eoh = n;
+        self.datastart = n + 5;
     }
 
     pub fn loadheader(&mut self){
@@ -118,26 +122,25 @@ impl Record {
     }
 
     pub fn loaddata(&mut self){
-        for _n in 0..self.streams {
-            self.electrodes.push(Vec::new());
-        }
-
         let mut file = File::open(&self.filepath).expect("Introuvable");
-        io::Seek::seek(&mut file, SeekFrom::Start(self.eoh+5)).expect("No");
+        file.seek(SeekFrom::Start(self.datastart)).expect("No");
         let metadata = file.metadata().expect("No");
-        let rows = metadata.len() / 2 / self.streams;
-        let mut eof = false;
-        let mut row = 0;
-        progress(true, row, rows);
-        while !eof {
+        let bytes = metadata.len() - self.datastart; //File length minus header
+        let mut buffer = vec!(0;bytes as usize);
+        file.read(&mut buffer).expect("Pb");
+        println!("{}",buffer.len());
+        self.bin = buffer;
+        self.bin2electrode();
+    }
+    
+    fn bin2electrode(&mut self){
+        self.electrodes = vec![vec![0.0];self.streams as usize];
+        let mut k = 0;
+        while k <= self.bin.len()/2 {
             for n in 0..self.streams {
-                match file.read_i16(){
-                    Ok(v) => self.electrodes[n as usize].push(v as f64),
-                    Err(_) => eof = true
-                };
+                self.electrodes[n as usize].push((((self.bin[k] as i16) << 8) | self.bin[k+1] as i16) as f64);
+                k += 2;
             }
-            row += 1;
-            progress(false, row, rows);
         }
     }
 
