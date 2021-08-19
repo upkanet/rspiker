@@ -59,13 +59,28 @@
 
         });
     }
-
+    
     function raster(timewidth = 2){
-        //var n = 175;
+        var config = getConfig();
+        console.log(config);
         for(var n = 0; n < 256; n++){
-            $('#raster').append(`<canvas id="raster_${n}" width="70" height="55"></canvas>`);
+            var el = config.map_mea[n];
+            $('#raster').append(`<canvas id="raster_${el}" width="70" height="55"></canvas>`);
+        }
+        for(var n = 0; n < 256; n++){
             plotERaster(n,timewidth);
         }
+    }
+
+    function getConfig(){
+        var config = 0;
+        $.ajax({
+            url: '/config',
+            async: false
+        }).done(function(data){
+            config = data;
+        });
+        return config;
     }
 
 </script>

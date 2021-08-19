@@ -43,6 +43,12 @@ fn js(f: String) -> Result<NamedFile, NotFound<String>> {
     NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
 }
 
+#[get("/config")]
+fn config() -> Result<NamedFile, NotFound<String>> {
+    let path = Path::new("config.json");
+    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+}
+
 #[get("/")]
 fn index() -> Result<NamedFile, NotFound<String>> {
     let path = Path::new("public/index.htm");
@@ -51,13 +57,13 @@ fn index() -> Result<NamedFile, NotFound<String>> {
 
 fn main() {
     println!("RSpiker launch");
-    let mut r = Record::new("data/10011.raw".to_string());
+    let mut r = Record::new("data/90003.raw".to_string());
     let now = Instant::now();
     println!("Loading data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,js,electrode,felectrode,selectrode])
+        .mount("/", routes![index,js,config,electrode,felectrode,selectrode])
         .launch();
 }
