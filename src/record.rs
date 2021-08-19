@@ -19,6 +19,7 @@ pub struct Record {
     pub adczero: u64,
     pub el: f64,
     pub streams: u64,
+    pub ebin: String,
     pub electrodes: Vec<Vec<f64>>,
     pub felectrodes: Vec<Vec<f64>>,
     pub selectrodes: Vec<Vec<f64>>
@@ -36,7 +37,7 @@ impl Record {
         let electrodes: Vec<Vec<f64>> = Vec::new();
         let felectrodes: Vec<Vec<f64>> = Vec::new();
         let selectrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, electrodes, felectrodes, selectrodes };
+        return Record{ filepath , sample_rate: 0, eoh: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0,ebin: "".to_string(), electrodes, felectrodes, selectrodes };
     }
 
     pub fn config(&self) -> Config{
