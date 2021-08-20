@@ -29,9 +29,9 @@ pub struct Record {
 
 #[derive(Deserialize)]
 pub struct Config {
-    fc: u64,
-    threshold: f64,
-    timewidth: u64
+    pub fc: u64,
+    pub threshold: f64,
+    pub timewidth: u64
 }
 
 impl Record {
