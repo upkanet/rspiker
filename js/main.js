@@ -31,25 +31,27 @@ function initGridName(name){
             rawc.append(`<div class="row"></div>`);
             var rawcr = rawc.children().last();
         }
-        rawcr.append(`<div class="col test"><div id="g-${name}-${i}" style="width:100%;height:100%;display: none;"></div></div>`);
+        rawcr.append(`<div class="col e-tile"><div id="g-${name}-${i}" style="width:100%;height:100%;"></div></div>`);
     }
 }
 
 function populateGridName(name){
+    var layout = { paper_bgcolor: 'transparent',plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {visible: false }, yaxis: {visible: false}, hovermode: false,margin: {l: 0, r: 0, b: 0, t: 0 } };
     for(var i = 0; i < 256;i++){
-        plotEdata(`g-${name}-${i}`,"e",i);
+        plotEdata(`g-${name}-${i}`,"e",i,layout, { displayModeBar: false });
     }
 }
 
-var layoutBlack = { paper_bgcolor: 'black', plot_bgcolor: 'black', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
+var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
-function plotEdata(graph,mod,electrode){
+function plotEdata(graph,mod,electrode, layout, config = {}){
     $.getJSON(`/electrode/${mod}/${electrode}`, function (data) {
+        console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
         layoutBlack.xaxis.title = electrode;
         /*layoutBlack.xaxis.ticksuffix = ticksuffix;*/
-        Plotly.newPlot(graph, [d], layoutBlack);
+        Plotly.newPlot(graph, [d], layout, config);
     });
 }
 function plotERaster(electrode,timewidth){
