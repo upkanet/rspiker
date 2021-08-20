@@ -1,7 +1,9 @@
 //Init
+$(init);
 function init(){
     updateSlider();
     initGrid();
+    refresh();
 }
 
 //Nav
@@ -30,15 +32,20 @@ function updateSlider(){
         $.getJSON("\duration", (duration) => {
             var s = Math.floor(duration / config.timewidth);
             $("#slider").attr('max',s);
+            refresh();
         });
     });
+}
+
+function refresh(){
+    var id = $('.tab-active').first().attr('id');
+    populateGridName(id);
 }
 
 //Graphics
 function initGrid(){
     initGridName("raw");
     initGridName("filtered");
-    populateGridName("raw");
 }
 
 function initGridName(name){
@@ -69,7 +76,8 @@ function populateGridName(name){
 var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
 function plotEdata(graph,mod,electrode, layout, config = {}){
-    $.getJSON(`/electrode/${mod}/${electrode}`, function (data) {
+    var s = $("#slider").val();
+    $.getJSON(`/electrode/${mod}/${electrode}/timeslice/${s}`, function (data) {
         //console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };

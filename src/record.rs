@@ -125,7 +125,7 @@ impl Record {
         file.seek(SeekFrom::Start(self.datastart)).expect("No");
         let metadata = file.metadata().expect("No");
         let bytes = metadata.len() - self.datastart; //File length minus header
-        self.duration = bytes as f64 / self.streams as f64 / 2.0 / self.sample_rate as f64; // divided by 2 because 2 x u8 = 1 x i16
+        self.duration = bytes as f64 / 2.0 / self.sample_rate as f64 / self.streams as f64; // divided by 2 because 2 x u8 = 1 x i16
         let mut buffer = vec!(0;bytes as usize);
         file.read(&mut buffer).expect("Pb");
         self.bin2electrode(buffer);
@@ -134,7 +134,7 @@ impl Record {
     fn bin2electrode(&mut self, bin: Vec<u8>){
         self.electrodes = vec![vec![0.0];self.streams as usize];
         let mut k = 0;
-        while k <= bin.len()/2 {
+        while k+1+2*256 < bin.len() {
             for n in 0..self.streams {
                 self.electrodes[n as usize].push((((bin[k] as i16) << 8) | bin[k+1] as i16) as f64);
                 k += 2;
