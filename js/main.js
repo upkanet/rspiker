@@ -1,6 +1,9 @@
 //Nav
 function tshow(e){
     var tn = $(e).data('tab');
+    if(tn == "raw" || tn == "filtered"){
+        populateGridName(tn);
+    }
     show(tn);
 }
 
@@ -37,8 +40,13 @@ function initGridName(name){
 
 function populateGridName(name){
     var layout = { paper_bgcolor: 'transparent',plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {visible: false }, yaxis: {visible: false}, hovermode: false,margin: {l: 0, r: 0, b: 0, t: 0 } };
+    var mod = "e";
+    switch(name){
+        case("raw"): mod = "e"; break;
+        case("filtered"): mod = "f"; break;
+    }
     for(var i = 0; i < 256;i++){
-        plotEdata(`g-${name}-${i}`,"e",i,layout, { displayModeBar: false });
+        plotEdata(`g-${name}-${i}`,mod,i,layout, { displayModeBar: false });
     }
 }
 
@@ -46,7 +54,7 @@ var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', f
 
 function plotEdata(graph,mod,electrode, layout, config = {}){
     $.getJSON(`/electrode/${mod}/${electrode}`, function (data) {
-        console.log(data);
+        //console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
         layoutBlack.xaxis.title = electrode;
