@@ -157,26 +157,27 @@ impl Record {
         return fe;
     }
 
-    /*pub fn espiker(&self, n: usize) -> Vec<f64>{
+    pub fn espiker(&self, n: usize) -> Vec<f64>{
         let threshold = self.config().threshold;
         //println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
-        let avg = match mean(&self.felectrodes[n].to_vec()){
+        let fe = self.efilter(n).to_vec();
+        let avg = match mean(&fe){
             Some(v) => v,
             None => 0.0
         };
-        let stddev = match std_deviation(&self.felectrodes[n].to_vec()){
+        let stddev = match std_deviation(&fe){
             Some(v) => v,
             None => 0.0
         };
 
-        let mut se = self.felectrodes[n].to_vec();
+        let mut se = fe.to_vec();
 
         se[0] = 0.0;
 
         for k in 1..se.len() {
             // Y m-1
-            let ym1 = self.felectrodes[n][k-1];
-            let y = self.felectrodes[n][k];
+            let ym1 = fe[k-1];
+            let y = fe[k];
             let tup = avg + threshold * stddev;
             let tdown = avg - threshold * stddev;
 
@@ -195,7 +196,7 @@ impl Record {
 
         return se;
 
-    }*/
+    }
 
     pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
         let k = (s * self.config().timewidth * self.sample_rate) as usize;

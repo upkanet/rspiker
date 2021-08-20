@@ -43,12 +43,9 @@ fn ftimeslice(r: State<Record>, n: usize, s: u64) -> String {
 
 #[get("/electrode/s/<n>")]
 fn selectrode(r: State<Record>, n: usize) -> String {
-    /*let mut r2 = r.clone();
-    r2.felectrodes[n as usize] = r2.efilter(n);
-    let el = r2.espiker(n);
+    let el = r.espiker(n);
     let j = json!(el);
-    return j.to_string();*/
-    return "".to_string();
+    return j.to_string();
 }
 
 #[get("/duration")]

@@ -12,6 +12,9 @@ function tshow(e){
     if(tn == "raw" || tn == "filtered"){
         populateGridName(tn);
     }
+    if(tn == "raster"){
+        populateRaster();
+    }
     show(tn);
 }
 
@@ -46,6 +49,7 @@ function refresh(){
 function initGrid(){
     initGridName("raw");
     initGridName("filtered");
+    initGridName("raster");
 }
 
 function initGridName(name){
@@ -73,6 +77,25 @@ function populateGridName(name){
     }
 }
 
+/*function raster(timewidth = 2){
+    var config = getConfig();
+    console.log(config);
+    for(var n = 0; n < 256; n++){
+        var el = config.map_mea[n];
+        $('#raster').append(`<canvas id="raster_${el}" width="70" height="55"></canvas>`);
+    }
+    for(var n = 0; n < 256; n++){
+        plotERaster(n,timewidth);
+    }
+}*/
+
+function populateRaster(){
+    var config = getConfig();
+    for(var i = 0; i < 256;i++){
+        plotERaster(i, config.timewidth);
+    }
+}
+
 var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
 function plotEdata(graph,mod,electrode, layout, config = {}){
@@ -88,8 +111,7 @@ function plotEdata(graph,mod,electrode, layout, config = {}){
 }
 function plotERaster(electrode,timewidth){
     $.getJSON(`/electrode/s/${electrode}`, function (data) {
-        /*const reducer = (accumulator, currentValue) => accumulator + currentValue;
-        console.log(data.reduce(reducer) + " spikes");*/
+        var config = getConfig();
 
         var sample_rate = 20000;
         var w = 70;
@@ -114,17 +136,6 @@ function plotERaster(electrode,timewidth){
     });
 }
 
-function raster(timewidth = 2){
-    var config = getConfig();
-    console.log(config);
-    for(var n = 0; n < 256; n++){
-        var el = config.map_mea[n];
-        $('#raster').append(`<canvas id="raster_${el}" width="70" height="55"></canvas>`);
-    }
-    for(var n = 0; n < 256; n++){
-        plotERaster(n,timewidth);
-    }
-}
 
 function getConfig(){
     var config = 0;
