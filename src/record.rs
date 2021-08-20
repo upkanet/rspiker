@@ -249,6 +249,22 @@ impl Record {
         //ToDo
         self.eraster(174);
     }
+
+    pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
+        let k = (s * self.config().timewidth * self.sample_rate) as usize;
+        let mut k2 = ((s + 1) * self.config().timewidth * self.sample_rate) as usize;
+        let mut el:Vec<f64> = Vec::new();
+        if m == "e"{
+            el = self.electrodes[n].to_vec();
+        }
+        else if m == "f" {
+            el = self.felectrodes[n].to_vec();
+        }
+        if k2 > el.len(){
+            k2 = el.len();
+        }
+        return el[k..k2].to_vec();
+    }
 }
 
 fn mean(data: &[f64]) -> Option<f64> {

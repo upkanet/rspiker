@@ -21,14 +21,8 @@ fn electrode(r: State<Record>, n: usize) -> String {
 }
 #[get("/electrode/e/<n>/timeslice/<s>")]
 fn timeslice(r: State<Record>, n: usize, s: u64) -> String {
-    let k = (s * r.config().timewidth * r.sample_rate) as usize;
-    let mut k2 = ((s + 1) * r.config().timewidth * r.sample_rate) as usize;
-    let el = r.electrodes[n].to_vec();
-    if k2 > el.len(){
-        k2 = el.len();
-    }
-    let sel = &el[k..k2];
-    let j = json!(sel);
+    let el = r.timeslice("e", s, n);
+    let j = json!(el);
     return j.to_string();
 }
 
