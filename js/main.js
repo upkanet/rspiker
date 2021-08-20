@@ -51,7 +51,6 @@ function progress(n,t){
         d.show();
         d.css('width',Math.round(n/t * 100) + "%");
     }
-    console.log(n,t);
 }
 
 //Slider
@@ -142,16 +141,18 @@ function plotERaster(electrode,timewidth){
     $.getJSON(`/electrode/s/${electrode}`, function (data) {
         var config = getConfig();
 
+        var d = $(`#g-raster-${electrode}`);
         var sample_rate = 20000;
-        var w = 70;
-        var h = 55;
+        var w = d.width();
+        var h = d.height();
         var tw = timewidth;
         var th = Math.round((data.length / sample_rate) / tw);
         var sh = h / th * 0.8;
 
-        var canvas = document.getElementById("raster_"+electrode);
+        d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+        var canvas = $(`#g-raster-${electrode}>canvas`)[0];
         var ctx = canvas.getContext('2d');
-        ctx.fillStyle="green";
+        ctx.fillStyle="#1f77b4";
 
         data.forEach((v,k) => {
             if(v > 0){
