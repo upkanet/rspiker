@@ -1,6 +1,5 @@
 extern crate file_utils;
 extern crate serde;
-use draw::*;
 
 use std::io;
 use std::fs::File;
@@ -22,9 +21,7 @@ pub struct Record {
     pub el: f64,
     pub streams: u64,
     pub duration: f64,
-    pub electrodes: Vec<Vec<f64>>,
-    pub felectrodes: Vec<Vec<f64>>,
-    pub selectrodes: Vec<Vec<f64>>
+    pub electrodes: Vec<Vec<f64>>
 }
 
 #[derive(Deserialize)]
@@ -37,9 +34,7 @@ pub struct Config {
 impl Record {
     pub fn new(filepath: String) -> Record {
         let electrodes: Vec<Vec<f64>> = Vec::new();
-        let felectrodes: Vec<Vec<f64>> = Vec::new();
-        let selectrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes, felectrodes, selectrodes };
+        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes };
     }
 
     pub fn config(&self) -> Config{
@@ -53,8 +48,6 @@ impl Record {
     pub fn load(&mut self){
         self.findeoh();
         self.loadheader();
-        self.felectrodes = vec![vec![0.0];self.streams as usize];
-        self.selectrodes = vec![vec![0.0];self.streams as usize];
         self.loaddata();
     }
 
@@ -164,15 +157,7 @@ impl Record {
         return fe;
     }
 
-    pub fn filter(&mut self){
-        progress(true,0,self.streams);
-        for n in 0..self.streams{
-            self.felectrodes[n as usize] = self.efilter(n as usize);
-            progress(false,n,self.streams);
-        }
-    }
-
-    pub fn espiker(&self, n: usize) -> Vec<f64>{
+    /*pub fn espiker(&self, n: usize) -> Vec<f64>{
         let threshold = self.config().threshold;
         //println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
         let avg = match mean(&self.felectrodes[n].to_vec()){
@@ -210,45 +195,7 @@ impl Record {
 
         return se;
 
-    }
-
-    pub fn spiker(&mut self){
-        for n in 0..self.streams{
-            self.selectrodes[n as usize] = self.espiker(n as usize);
-        }
-    }
-
-    fn eraster(&self, n: usize){
-        let timewidth = self.config().timewidth;
-        println!("Saving RasterPlot at {} s timewidth on electrode #{}",timewidth,n);
-        let data = &self.selectrodes[n];
-        println!("selectrodes[{}] data length{}",n,data.len());
-        let tw = timewidth as f64;
-        let th = data.len() as f64 / self.sample_rate as f64 / tw;
-        let w = 1000 as f64;
-        let h = 1000 as f64;
-        let mut canvas = Canvas::new(w as u32, h as u32);
-        for k in 0..data.len(){
-            if data[k] > 0.0 {
-                let t = k as f64 / self.sample_rate as f64;
-                let x = t%tw / tw;
-                let y = t/tw / th;
-                let rect = Drawing::new()
-                    .with_shape(Shape::Rectangle {
-                        width: 2,
-                        height: 20
-                    })
-                    .with_xy((x * w) as f32, (y * h) as f32);
-                canvas.display_list.add(rect);
-            }
-        }
-        render::save(&canvas, "test.svg", SvgRenderer::new()).expect("Failed to save");
-    }
-
-    pub fn raster(&self){
-        //ToDo
-        self.eraster(174);
-    }
+    }*/
 
     pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
         let k = (s * self.config().timewidth * self.sample_rate) as usize;
@@ -258,7 +205,7 @@ impl Record {
             el = self.electrodes[n].to_vec();
         }
         else if m == "f" {
-            el = self.felectrodes[n].to_vec();
+            el = self.efilter(n);
         }
         if k2 > el.len(){
             k2 = el.len();

@@ -19,6 +19,7 @@ fn electrode(r: State<Record>, n: usize) -> String {
     let j = json!(el);
     return j.to_string();
 }
+
 #[get("/electrode/e/<n>/timeslice/<s>")]
 fn timeslice(r: State<Record>, n: usize, s: u64) -> String {
     let el = r.timeslice("e", s, n);
@@ -33,13 +34,21 @@ fn felectrode(r: State<Record>, n: usize) -> String {
     return j.to_string();
 }
 
+#[get("/electrode/f/<n>/timeslice/<s>")]
+fn ftimeslice(r: State<Record>, n: usize, s: u64) -> String {
+    let el = r.timeslice("f", s, n);
+    let j = json!(el);
+    return j.to_string();
+}
+
 #[get("/electrode/s/<n>")]
 fn selectrode(r: State<Record>, n: usize) -> String {
-    let mut r2 = r.clone();
+    /*let mut r2 = r.clone();
     r2.felectrodes[n as usize] = r2.efilter(n);
     let el = r2.espiker(n);
     let j = json!(el);
-    return j.to_string();
+    return j.to_string();*/
+    return "".to_string();
 }
 
 #[get("/duration")]
@@ -81,6 +90,6 @@ fn main() {
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,duration,timeslice])
+        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,duration,timeslice,ftimeslice])
         .launch();
 }
