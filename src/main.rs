@@ -36,6 +36,11 @@ fn selectrode(r: State<Record>, n: usize) -> String {
     return j.to_string();
 }
 
+#[get("/duration")]
+fn duration(r: State<Record>) -> String {
+    return r.duration.to_string();
+}
+
 #[get("/js/<f>")]
 fn js(f: String) -> Result<NamedFile, NotFound<String>> {
     let path = Path::new("js/").join(f);
@@ -63,13 +68,13 @@ fn index() -> Result<NamedFile, NotFound<String>> {
 
 fn main() {
     println!("RSpiker launch");
-    let mut r = Record::new("data/1.raw".to_string());
+    let mut r = Record::new("data/0.raw".to_string());
     let now = Instant::now();
     println!("Loading data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode])
+        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,duration])
         .launch();
 }

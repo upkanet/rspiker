@@ -25,6 +25,10 @@
         height: 50px;
     }
 
+    #slider{
+        margin-top: 10px;
+    }
+
     .test{
         border: 1px solid red;
         height: 50px;
@@ -46,14 +50,12 @@
             <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);">Config</a>
         </li>
     </ul>
-    <div id="slider" class="container">
+    <div class="container">
         <div class="row">
             <div class="col-10">
-                <br>
-                <input type="range" class="form-range" min="0" max="5" value="0">
+                <input id="slider" type="range" class="form-range" min="0" max="5" value="0">
             </div>
             <div class="col-2">
-                <br>
                 <button type="button" class="btn btn-primary">Electrode #</button>
             </div>
         </div>

@@ -1,3 +1,9 @@
+//Init
+function init(){
+    updateSlider();
+    initGrid();
+}
+
 //Nav
 function tshow(e){
     var tn = $(e).data('tab');
@@ -16,6 +22,16 @@ function show(tabname){
         $(e).removeClass('tab-active');
     });
     $(`#${tabname}`).addClass('tab-active');
+}
+
+//Slider
+function updateSlider(){
+    $.getJSON("\config", function(config){
+        $.getJSON("\duration", (duration) => {
+            var s = Math.floor(duration / config.timewidth);
+            $("#slider").attr('max',s);
+        });
+    });
 }
 
 //Graphics
