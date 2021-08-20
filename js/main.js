@@ -1,9 +1,8 @@
 //Init
 $(init);
 function init(){
-    updateSlider();
     initGrid();
-    refresh();
+    updateSlider();
 }
 
 //Nav
@@ -27,6 +26,32 @@ function show(tabname){
         $(e).removeClass('tab-active');
     });
     $(`#${tabname}`).addClass('tab-active');
+}
+
+//Loading
+var dataloadertotal = 0;
+var dataloadercount = 0;
+
+function dataloaderinit(t){
+    dataloadercount = 0;
+    dataloadertotal = t;
+}
+
+function dataloader(){
+    dataloadercount++;
+    progress(dataloadercount,dataloadertotal);
+}
+
+function progress(n,t){
+    var d = $('#data-progress');
+    if(n == t){
+        d.hide();
+    }
+    else{
+        d.show();
+        d.css('width',Math.round(n/t * 100) + "%");
+    }
+    console.log(n,t);
 }
 
 //Slider
@@ -72,6 +97,7 @@ function populateGridName(name){
         case("raw"): mod = "e"; break;
         case("filtered"): mod = "f"; break;
     }
+    dataloaderinit(256);
     for(var i = 0; i < 256;i++){
         plotEdata(`g-${name}-${i}`,mod,i,layout, { displayModeBar: false });
     }
@@ -91,6 +117,7 @@ function populateGridName(name){
 
 function populateRaster(){
     var config = getConfig();
+    dataloaderinit(256);
     for(var i = 0; i < 256;i++){
         plotERaster(i, config.timewidth);
     }
@@ -99,14 +126,16 @@ function populateRaster(){
 var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
 function plotEdata(graph,mod,electrode, layout, config = {}){
+
     var s = $("#slider").val();
-    $.getJSON(`/electrode/${mod}/${electrode}/timeslice/${s}`, function (data) {
+    $.getJSON(`/electrode/${mod}/${electrode}/timeslice/${s}`, (data) => {
         //console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
         layoutBlack.xaxis.title = electrode;
         /*layoutBlack.xaxis.ticksuffix = ticksuffix;*/
         Plotly.newPlot(graph, [d], layout, config);
+        dataloader();
     });
 }
 function plotERaster(electrode,timewidth){
@@ -132,7 +161,7 @@ function plotERaster(electrode,timewidth){
                 ctx.fillRect(x * w,y * h,1,sh);
             }
         });
-
+        dataloader();
     });
 }
 

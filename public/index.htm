@@ -29,6 +29,14 @@
         margin-top: 10px;
     }
 
+    #data-progress{
+        background-color: #375a7f;
+        height:5px;
+        position: fixed;
+        width:100%;
+        top:0px;
+    }
+
     .test{
         border: 1px solid red;
         height: 50px;
@@ -36,6 +44,7 @@
 </style>
 
 <body>
+    <div id="data-progress" style="display: none;"></div>
     <ul class="nav nav-tabs nav-justified">
         <li class="nav-item">
             <a class="nav-link active" data-tab="raw" onclick="javascript:tshow(this);">Raw</a>
