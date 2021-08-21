@@ -164,6 +164,7 @@ function plotEdata(graph,mod,electrode){
 function plotERaster(graph,electrode,timewidth){
     $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
         var d = $(`#${graph}`);
+        d.attr('data-e',electrode);
         d.html('');
         var sample_rate = 20000;
         var w = d.width();
@@ -186,6 +187,51 @@ function plotERaster(graph,electrode,timewidth){
             }
         });
         dataloader();
+    });
+}
+
+function plotEstack(){
+    var config = getConfig();
+    var timewidth = config.timewidth;
+    var electrode = $("#g-raster-el").data('e');
+    var step = $('#stack-width').val();
+    $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
+        var sample_rate = 20000;
+        var tw = timewidth;
+
+        var histo = new Array(Math.round(timewidth / step)+1).fill(0);
+
+        data.forEach((v,k) => {
+            if(v > 0){
+                var t = k / sample_rate;
+                var x = t%tw / tw;
+                histo[Math.round(x * timewidth / step)] += 1;
+                //ctx.fillRect(x * w,y * h,1,sh);
+            }
+        });
+        console.log(histo);
+        plotHistoStack(histo);
+        dataloader();
+    });
+}
+
+function plotHistoStack(histo){
+    var d = $(`#g-raster-el`);
+    d.html('');
+    var w = d.width();
+    var h = d.height();
+
+    d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+    var canvas = $(`#g-raster-el>canvas`)[0];
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle="#1f77b4";
+
+    var sw = w / histo.length;
+    var sh = h / Math.max(...histo);
+
+    histo.forEach((v,k) => {
+        var x = k * sw;
+        ctx.fillRect(x,0,sw,sh * v);
     });
 }
 
