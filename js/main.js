@@ -132,15 +132,41 @@ function populateRaster(){
     }
 }
 
-function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
+/*function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
     var s = $("#slider").val();
     $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
         //console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
-        /*layoutBlack.xaxis.title = electrode;*/
-        /*layoutBlack.xaxis.ticksuffix = ticksuffix;*/
+        //layoutBlack.xaxis.title = electrode;
+        //layoutBlack.xaxis.ticksuffix = ticksuffix;
         Plotly.newPlot(graph, [d], layout, plotly_config);
+        dataloader();
+    });
+}*/
+
+function plotEdata(graph,mod,electrode){
+    var s = $("#slider").val();
+    $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
+        var d = $(`#${graph}`);
+        d.html('');
+        var w = d.width();
+        var h = d.height();
+        var aw = data.length;
+        var atop = Math.max(...data);
+        var abot = Math.min(...data);
+        var ah = atop - abot;
+
+        d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+        var canvas = $(`#${graph}>canvas`)[0];
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle="#1f77b4";
+
+        data.forEach((v,k) => {
+            var x = k / aw;
+            var y = (v - abot) / ah;
+            ctx.fillRect(x * w,y * h,1,1);
+        });
         dataloader();
     });
 }
