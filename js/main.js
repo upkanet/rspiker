@@ -206,23 +206,21 @@ function plotEstack(){
                 var t = k / sample_rate;
                 var x = t%tw / tw;
                 histo[Math.round(x * timewidth / step)] += 1;
-                //ctx.fillRect(x * w,y * h,1,sh);
             }
         });
-        console.log(histo);
         plotHistoStack(histo);
-        dataloader();
     });
 }
 
 function plotHistoStack(histo){
-    var d = $(`#g-raster-el`);
+    var d = $(`#g-stack-el`);
     d.html('');
+    d.show();
     var w = d.width();
     var h = d.height();
 
     d.append(`<canvas width="${w}" height="${h}"></canvas>`);
-    var canvas = $(`#g-raster-el>canvas`)[0];
+    var canvas = $(`#g-stack-el>canvas`)[0];
     var ctx = canvas.getContext('2d');
     ctx.fillStyle="#1f77b4";
 
@@ -233,6 +231,8 @@ function plotHistoStack(histo){
         var x = k * sw;
         ctx.fillRect(x,0,sw,sh * v);
     });
+
+    document.getElementById("g-stack-el").scrollIntoView(true);
 }
 
 function getConfig(){
