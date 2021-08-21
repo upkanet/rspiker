@@ -44,6 +44,13 @@
         bottom:0px;
     }
 
+    .el-grid{
+        display: grid;
+        grid-template-columns: repeat(16, 1fr);
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
     .test{
         border: 1px solid red;
         height: 50px;
@@ -78,18 +85,15 @@
     </div>
     <div class="tab tab-active" id="raw"></div>
     <div class="tab" id="raw_el">
-        <button type="button" class="btn btn-success" onclick="show('raw')">Close</button>
-        <div id="g-raw-el" style="width:100%;height:calc(100% - 100px);"></div>
+        <div id="g-raw-el" style="width:100%;height:calc(100% - 150px);" onclick="show('raw')"></div>
     </div>
     <div class="tab" id="filtered"></div>
     <div class="tab" id="filtered_el">
-        <button type="button" class="btn btn-success" onclick="show('filtered')">Close</button>
-        <div id="g-filtered-el" style="width:100%;height:calc(100% - 100px);"></div>
+        <div id="g-filtered-el" style="width:100%;height:calc(100% - 150px);" onclick="show('filtered')"></div>
     </div>
     <div class="tab" id="raster"></div>
     <div class="tab" id="raster_el">
-        <button type="button" class="btn btn-success" onclick="show('raster')">Close</button>
-        <div id="g-raster-el" style="width:100%;height:calc(100% - 100px);"></div>
+        <div id="g-raster-el" style="width:100%;height:calc(100% - 150px);" onclick="show('raster')"></div>
     </div>
     <div class="tab" id="config">Config</div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>

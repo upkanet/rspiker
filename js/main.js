@@ -98,16 +98,12 @@ function initGrid(){
 
 function initGridName(name){
     var config = getConfig();
-    var raw = $(`#${name}`);
-    raw.html(`<div class="container-fluid"></div>`);
-    var rawc = raw.children().first();
+    var grid = $(`#${name}`);
+    grid.append('<div class="el-grid"></div>');
+    grid = grid.children().first();
     for(var i = 0; i < 256;i++){
-        if(i%16 == 0){
-            rawc.append(`<div class="row"></div>`);
-            var rawcr = rawc.children().last();
-        }
         var el = config.map_mea[i];
-        rawcr.append(`<div class="col e-tile" onclick="open_el('${name}',${el})"><div id="g-${name}-${el}" data-e="${el}" style="width:100%;height:100%;"></div></div>`);
+        grid.append(`<div class="col e-tile" onclick="open_el('${name}',${el})"><div id="g-${name}-${el}" data-e="${el}" style="width:100%;height:100%;"></div></div>`);
     }
 }
 
