@@ -48,6 +48,12 @@ function open_el(mod,n){
     }
 }
 
+function select_el(){
+    var el = prompt("Electrode number");
+    var mod = $('.tab-active').attr('id');
+    open_el(mod,el);
+}
+
 //Loading
 var dataloadertotal = 0;
 var dataloadercount = 0;
@@ -127,19 +133,6 @@ function populateRaster(){
         plotERaster(`g-raster-${i}`,i, config.timewidth);
     }
 }
-
-/*function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
-    var s = $("#slider").val();
-    $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
-        //console.log(data);
-        var sample_rate = 20000;
-        var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
-        //layoutBlack.xaxis.title = electrode;
-        //layoutBlack.xaxis.ticksuffix = ticksuffix;
-        Plotly.newPlot(graph, [d], layout, plotly_config);
-        dataloader();
-    });
-}*/
 
 function plotEdata(graph,mod,electrode){
     var s = $("#slider").val();
