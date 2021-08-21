@@ -51,6 +51,18 @@
         margin-right: 20px;
     }
 
+    #home-grid{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-left: 30px;
+        margin-right: 30px;
+    }
+
+    #home-grid>button{
+        margin: 5px;
+        height: 200px;
+    }
+
     .test{
         border: 1px solid red;
         height: 50px;
@@ -61,7 +73,10 @@
     <div id="data-progress" style="display: none;"></div>
     <ul class="nav nav-tabs nav-justified">
         <li class="nav-item">
-            <a class="nav-link active" data-tab="raw" onclick="javascript:tshow(this);">Raw</a>
+            <a class="nav-link active" data-tab="home" onclick="javascript:tshow(this);">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-tab="raw" onclick="javascript:tshow(this);">Raw</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</a>
@@ -83,7 +98,15 @@
             </div>
         </div>
     </div>
-    <div class="tab tab-active" id="raw"></div>
+    <div class="tab tab-active" id="home">
+        <div id="home-grid">
+            <button type="button" class="btn btn-primary" data-tab="raw" onclick="javascript:tshow(this);">Raw</button>
+            <button type="button" class="btn btn-primary" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</button>
+            <button type="button" class="btn btn-primary" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</button>
+            <button type="button" class="btn btn-primary" data-tab="config" onclick="javascript:tshow(this);">Config</button>
+        </div>
+    </div>
+    <div class="tab" id="raw"></div>
     <div class="tab" id="raw_el">
         <div id="g-raw-el" style="width:100%;height:calc(100% - 150px);" onclick="show('raw')"></div>
     </div>

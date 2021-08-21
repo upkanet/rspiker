@@ -115,10 +115,11 @@ function initGridName(name){
 
 function populateGridName(name){
     var layout = { paper_bgcolor: 'transparent',plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {visible: false }, yaxis: {visible: false}, hovermode: false,margin: {l: 0, r: 0, b: 0, t: 0 } };
-    var mod = "e";
+    var mod = "";
     switch(name){
         case("raw"): mod = "e"; break;
         case("filtered"): mod = "f"; break;
+        default: return;
     }
     dataloaderinit(256);
     for(var i = 1; i <= 256;i++){
