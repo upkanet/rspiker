@@ -25,6 +25,12 @@
         height: 50px;
     }
 
+    [data-e]::before{
+        content: attr(data-e) " ";
+        position: absolute;
+        z-index: 100;
+    }
+
     #slider{
         margin-top: 10px;
     }

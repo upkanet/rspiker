@@ -77,6 +77,7 @@ function initGrid(){
 }
 
 function initGridName(name){
+    var config = getConfig();
     var raw = $(`#${name}`);
     raw.html(`<div class="container-fluid"></div>`);
     var rawc = raw.children().first();
@@ -85,7 +86,8 @@ function initGridName(name){
             rawc.append(`<div class="row"></div>`);
             var rawcr = rawc.children().last();
         }
-        rawcr.append(`<div class="col e-tile"><div id="g-${name}-${i}" style="width:100%;height:100%;"></div></div>`);
+        var el = config.map_mea[i];
+        rawcr.append(`<div class="col e-tile"><div id="g-${name}-${el}" data-e="${el}" style="width:100%;height:100%;"></div></div>`);
     }
 }
 
