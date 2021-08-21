@@ -99,27 +99,15 @@ function populateGridName(name){
         case("filtered"): mod = "f"; break;
     }
     dataloaderinit(256);
-    for(var i = 0; i < 256;i++){
+    for(var i = 1; i <= 256;i++){
         plotEdata(`g-${name}-${i}`,mod,i,layout, { displayModeBar: false });
     }
 }
 
-/*function raster(timewidth = 2){
-    var config = getConfig();
-    console.log(config);
-    for(var n = 0; n < 256; n++){
-        var el = config.map_mea[n];
-        $('#raster').append(`<canvas id="raster_${el}" width="70" height="55"></canvas>`);
-    }
-    for(var n = 0; n < 256; n++){
-        plotERaster(n,timewidth);
-    }
-}*/
-
 function populateRaster(){
     var config = getConfig();
     dataloaderinit(256);
-    for(var i = 0; i < 256;i++){
+    for(var i = 1; i <= 256;i++){
         plotERaster(i, config.timewidth);
     }
 }
@@ -128,7 +116,7 @@ var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', f
 
 function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
     var s = $("#slider").val();
-    $.getJSON(`/electrode/${mod}/${electrode}/timeslice/${s}`, (data) => {
+    $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
         //console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
@@ -140,7 +128,7 @@ function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
 }
 
 function plotERaster(electrode,timewidth){
-    $.getJSON(`/electrode/s/${electrode}`, (data) => {
+    $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
         var d = $(`#g-raster-${electrode}`);
         var sample_rate = 20000;
         var w = d.width();
