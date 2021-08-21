@@ -9,6 +9,7 @@ use std::path::Path;
 use serde_json::json;
 
 use std::time::Instant;
+use std::env;
 
 mod record;
 use record::Record;
@@ -79,8 +80,9 @@ fn index() -> Result<NamedFile, NotFound<String>> {
 }
 
 fn main() {
-    println!("RSpiker launch");
-    let mut r = Record::new("data/10011.raw".to_string());
+    let args: Vec<String> = env::args().collect();
+    println!("RSpiker launch on {}", args[1]);
+    let mut r = Record::new(args[1].to_string());
     let now = Instant::now();
     println!("Loading data...");
     r.load();
