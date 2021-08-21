@@ -28,6 +28,26 @@ function show(tabname){
     $(`#${tabname}`).addClass('tab-active');
 }
 
+function open_el(mod,n){
+    show(`${mod}_el`);
+    var layout = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': n, ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
+    var modurl = "";
+    switch(mod){
+        case("raw"): modurl = "e"; break;
+        case("filtered"): modurl = "f"; break;
+        case("raster"): modurl = "r"; break;
+        default: break;
+    }
+    dataloaderinit(1);
+    if(mod == "raster"){
+        var config = getConfig();
+        plotERaster(`g-${mod}-el`,n, config.timewidth);
+    }
+    else{
+        plotEdata(`g-${mod}-el`,modurl,n, layout);
+    }
+}
+
 //Loading
 var dataloadertotal = 0;
 var dataloadercount = 0;
@@ -87,7 +107,7 @@ function initGridName(name){
             var rawcr = rawc.children().last();
         }
         var el = config.map_mea[i];
-        rawcr.append(`<div class="col e-tile"><div id="g-${name}-${el}" data-e="${el}" style="width:100%;height:100%;"></div></div>`);
+        rawcr.append(`<div class="col e-tile" onclick="open_el('${name}',${el})"><div id="g-${name}-${el}" data-e="${el}" style="width:100%;height:100%;"></div></div>`);
     }
 }
 
@@ -108,11 +128,9 @@ function populateRaster(){
     var config = getConfig();
     dataloaderinit(256);
     for(var i = 1; i <= 256;i++){
-        plotERaster(i, config.timewidth);
+        plotERaster(`g-raster-${i}`,i, config.timewidth);
     }
 }
-
-var layoutBlack = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': '', ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
 
 function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
     var s = $("#slider").val();
@@ -120,16 +138,17 @@ function plotEdata(graph,mod,electrode, layout, plotly_config = {}){
         //console.log(data);
         var sample_rate = 20000;
         var d = {x: data.map((x,index) => index / sample_rate), y: data.map(x => x), type: 'line' };
-        layoutBlack.xaxis.title = electrode;
+        /*layoutBlack.xaxis.title = electrode;*/
         /*layoutBlack.xaxis.ticksuffix = ticksuffix;*/
         Plotly.newPlot(graph, [d], layout, plotly_config);
         dataloader();
     });
 }
 
-function plotERaster(electrode,timewidth){
+function plotERaster(graph,electrode,timewidth){
     $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
-        var d = $(`#g-raster-${electrode}`);
+        var d = $(`#${graph}`);
+        d.html('');
         var sample_rate = 20000;
         var w = d.width();
         var h = d.height();
@@ -138,7 +157,7 @@ function plotERaster(electrode,timewidth){
         var sh = h / th * 0.8;
 
         d.append(`<canvas width="${w}" height="${h}"></canvas>`);
-        var canvas = $(`#g-raster-${electrode}>canvas`)[0];
+        var canvas = $(`#${graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
         ctx.fillStyle="#1f77b4";
 
