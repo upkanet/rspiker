@@ -208,71 +208,14 @@ impl Record {
         else if m == "f" {
             el = self.efilter(n);
         }
+        else if m == "s" {
+            el = self.espiker(n);
+        }
         if k2 > el.len(){
             k2 = el.len();
         }
         return el[k..k2].to_vec();
     }
-
-    /*pub fn esimple(&self, simp: usize, n: usize) -> Vec<f64>{
-        let mut mel:Vec<f64> = Vec::new();
-        let e = &self.electrodes[n];
-        for k in 0..simp-1{
-            mel.push(e[k]);
-        }
-        for k in simp..e.len(){
-            let mut sume = 0.0;
-            for i in 0..simp {
-                sume += e[k-i];
-            }
-            sume = sume / simp as f64;
-            mel.push(sume);
-        }
-        return mel;
-    }*/
-
-    /*pub fn esimple(&self, simp: usize, n: usize) -> Vec<f64>{
-        let mut del:Vec<f64> = Vec::new();
-        let e = &self.electrodes[n];
-        del.push(e[0]);
-        for k in 1..e.len(){
-            del.push(e[k] - e[k-1]);
-        }
-        let mut sdel:Vec<f64> = Vec::new();
-        let mut history:Vec<f64> = Vec::new();
-        for k in 0..simp{
-            history.push(del[k]);
-            sdel.push(del[k]);
-        }
-        for k in simp+1..del.len(){
-            history.remove(0);
-            history.push(del[k]);
-            let h = match mean(&history){
-                Some(v) => v,
-                None => 0.0
-            };
-            sdel.push(h);
-        }
-        return sdel;
-    }
-
-    pub fn esimple(&self, simp: usize, n: usize) -> Vec<f64>{
-        let mut s:Vec<f64> = Vec::new();
-        let e = &self.electrodes[n];
-        let mut history = false;
-        for k in 0..e.len(){
-            let mut v = 0.0;
-            if e[k] < -250.0 {
-                history = true;
-            }
-            if history {
-                v = 1.0;
-            }
-            s.push(v);
-        }
-        return s;
-
-    }*/
 
     pub fn stimstart(&self, n:usize) -> f64 {
         let e = &self.electrodes[n];

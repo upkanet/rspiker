@@ -200,6 +200,7 @@ function plotEdata(graph,mod,electrode,config){
             ctx.fillRect(x * w,y * h,1,1);
         });
         dataloader();
+        plotSpikes(graph, electrode);
     });
     abordable.push(f);
 }
@@ -236,6 +237,29 @@ function plotERaster(graph,electrode,config){
             }
         });
         dataloader();
+    });
+    abordable.push(f);
+}
+
+function plotSpikes(graph, electrode){
+    var s = $("#slider").val();
+    var f = $.getJSON(`/electrode/s/${electrode-1}/timeslice/${s}`, (data) => {
+        var d = $(`#${graph}`);
+        var w = d.width();
+        var h = d.height();
+        var aw = data.length;
+
+        var canvas = $(`#${graph}>canvas`)[0];
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle="green";
+
+        data.forEach((v,k) => {
+            if(v > 0){
+                var x = k / aw;
+                var y = 0.5;
+                ctx.fillRect(x * w,y * h,1,h/5);
+            }
+        });
     });
     abordable.push(f);
 }

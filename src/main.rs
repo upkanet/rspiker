@@ -1,6 +1,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
 #[macro_use] extern crate rocket;
+
 use rocket::State;
 use rocket::response::NamedFile;
 use rocket::response::status::NotFound;
@@ -9,7 +10,8 @@ use std::path::Path;
 use serde_json::json;
 
 use std::time::Instant;
-use std::env;
+
+use wfd::{DialogParams};
 
 mod record;
 use record::Record;
@@ -45,6 +47,13 @@ fn ftimeslice(r: State<Record>, n: usize, s: u64) -> String {
 #[get("/electrode/s/<n>")]
 fn selectrode(r: State<Record>, n: usize) -> String {
     let el = r.espiker(n);
+    let j = json!(el);
+    return j.to_string();
+}
+
+#[get("/electrode/s/<n>/timeslice/<s>")]
+fn stimeslice(r: State<Record>, n: usize, s: u64) -> String {
+    let el = r.timeslice("s", s, n);
     let j = json!(el);
     return j.to_string();
 }
@@ -90,15 +99,23 @@ fn index() -> Result<NamedFile, NotFound<String>> {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    println!("RSpiker launch on {}", args[1]);
-    let mut r = Record::new(args[1].to_string());
+    let params = DialogParams {
+        title: "Axorus Rspiker - Select a .raw file",
+        file_types: vec![("MCD raw", "*.raw")],
+        file_type_index: 1,
+        default_extension: "raw",
+        ..Default::default()
+    };
+    let dialog_result = wfd::open_dialog(params).expect("Open Dialog Error");
+    let fpath = dialog_result.selected_file_paths[0].to_str().unwrap();
+    println!("RSpiker launch on {}", fpath);
+    let mut r = Record::new(fpath.to_string());
     let now = Instant::now();
     println!("Loading data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,samplerate,duration,timeslice,ftimeslice,stimstart])
+        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,samplerate,duration,timeslice,ftimeslice,stimeslice,stimstart])
         .launch();
 }
