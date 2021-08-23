@@ -9,6 +9,8 @@ use std::path::Path;
 
 use serde_json::json;
 
+use std::time::Instant;
+
 use wfd::{DialogParams};
 
 mod record;
@@ -108,11 +110,16 @@ fn main() {
     let fpath = dialog_result.selected_file_paths[0].to_str().unwrap();
     println!("RSpiker launch on {}", fpath);
     let mut r = Record::new(fpath.to_string());
+    let now = Instant::now();
+    println!("Loading data...");
     r.load();
+    println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
         .attach(rocket::fairing::AdHoc::on_launch("Open Browser", |_x| {
-            webbrowser::open("http://localhost:8000/");
+            if webbrowser::open("http://localhost:8000/").is_ok() {
+                println!("Open web browser");
+            }
             return ();
         }))
         .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,samplerate,duration,timeslice,ftimeslice,stimeslice,stimstart])
