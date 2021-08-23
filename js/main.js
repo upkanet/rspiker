@@ -5,13 +5,6 @@ function init(){
     updateSlider();
 }
 
-//Test
-function test(){
-    show(null);
-    $('#g-test').show();
-    plotEdata("g-test","a",127);
-}
-
 //Nav
 function tshow(e){
     var tn = $(e).data('tab');
@@ -166,6 +159,7 @@ function populateRaster(){
 function plotEdata(graph,mod,electrode){
     var s = $("#slider").val();
     $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
+        console.log(data);
         var d = $(`#${graph}`);
         d.attr('data-e',electrode);
         d.data('e',electrode);

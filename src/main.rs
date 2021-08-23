@@ -54,6 +54,11 @@ fn duration(r: State<Record>) -> String {
     return r.duration.to_string();
 }
 
+#[get("/stimstart/<n>")]
+fn stimstart(r: State<Record>, n: usize) -> String {
+    return r.stimstart(n).to_string();
+}
+
 #[get("/js/<f>")]
 fn js(f: String) -> Result<NamedFile, NotFound<String>> {
     let path = Path::new("js/").join(f);
@@ -89,6 +94,6 @@ fn main() {
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,duration,timeslice,ftimeslice])
+        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,duration,timeslice,ftimeslice,stimstart])
         .launch();
 }
