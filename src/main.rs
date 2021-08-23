@@ -49,6 +49,11 @@ fn selectrode(r: State<Record>, n: usize) -> String {
     return j.to_string();
 }
 
+#[get("/samplerate")]
+fn samplerate(r: State<Record>) -> String {
+    return r.sample_rate.to_string();
+}
+
 #[get("/duration")]
 fn duration(r: State<Record>) -> String {
     return r.duration.to_string();
@@ -94,6 +99,6 @@ fn main() {
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
-        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,duration,timeslice,ftimeslice,stimstart])
+        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,samplerate,duration,timeslice,ftimeslice,stimstart])
         .launch();
 }

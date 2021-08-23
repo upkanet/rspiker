@@ -5,8 +5,11 @@ function init(){
     updateSlider();
 }
 
+var abordable = [];
+
 //Nav
 function tshow(e){
+    abortAll();
     var tn = $(e).data('tab');
     if(tn == "raw" || tn == "filtered"){
         populateGridName(tn);
@@ -29,6 +32,7 @@ function show(tabname){
 }
 
 function open_el(mod,n){
+    abortAll();
     show(`${mod}_el`);
     var layout = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': n, ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
     var modurl = "";
@@ -41,11 +45,18 @@ function open_el(mod,n){
     dataloaderinit(1);
     if(mod == "raster"){
         var config = getConfig();
-        plotERaster(`g-${mod}-el`,n, config.timewidth);
+        plotERaster(`g-${mod}-el`,n, config);
     }
     else{
         plotEdata(`g-${mod}-el`,modurl,n, layout);
     }
+}
+
+function abortAll(){
+    abordable.forEach((e) => {
+        e.abort();
+    });
+    abordable = [];
 }
 
 function select_el(){
@@ -152,14 +163,13 @@ function populateRaster(){
     var config = getConfig();
     dataloaderinit(256);
     for(var i = 1; i <= 256;i++){
-        plotERaster(`g-raster-${i}`,i, config.timewidth);
+        plotERaster(`g-raster-${i}`,i, config);
     }
 }
 
 function plotEdata(graph,mod,electrode){
     var s = $("#slider").val();
-    $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
-        console.log(data);
+    var f = $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
         var d = $(`#${graph}`);
         d.attr('data-e',electrode);
         d.data('e',electrode);
@@ -183,14 +193,20 @@ function plotEdata(graph,mod,electrode){
         });
         dataloader();
     });
+    abordable.push(f);
 }
 
-function plotERaster(graph,electrode,timewidth){
-    $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
+function plotERaster(graph,electrode,config){
+    var stimstart = config.stimstart;
+    var sample_rate = config.samplerate;
+    var timewidth = config.timewidth;
+    var stimstartpos = stimstart%timewidth / timewidth;
+    var stimwidth = $('#stimduration').val() / 1000;
+    var stimendpos = (stimstart%timewidth + stimwidth) / timewidth;
+    var f = $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
         var d = $(`#${graph}`);
         d.attr('data-e',electrode);
         d.html('');
-        var sample_rate = 20000;
         var w = d.width();
         var h = d.height();
         var tw = timewidth;
@@ -207,11 +223,18 @@ function plotERaster(graph,electrode,timewidth){
                 var t = k / sample_rate;
                 var x = t%tw / tw;
                 var y = Math.round(t/tw) / th;
+                if(x >= stimstartpos && x < stimendpos){
+                    ctx.fillStyle="red";
+                }
+                else{
+                    ctx.fillStyle="#1f77b4";
+                }
                 ctx.fillRect(x * w,y * h,1,sh);
             }
         });
         dataloader();
     });
+    abordable.push(f);
 }
 
 function plotEstack(){
@@ -219,7 +242,7 @@ function plotEstack(){
     var timewidth = config.timewidth;
     var electrode = $("#g-raster-el").data('e');
     var step = $('#stack-width').val();
-    $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
+    var f = $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
         var sample_rate = 20000;
         var tw = timewidth;
 
@@ -234,6 +257,7 @@ function plotEstack(){
         });
         plotHistoStack(histo);
     });
+    abordable.push(f);
 }
 
 function plotHistoStack(histo){
@@ -259,6 +283,27 @@ function plotHistoStack(histo){
     document.getElementById("g-stack-el").scrollIntoView(true);
 }
 
+function getSampleRate(){
+    $.ajax({
+        url: `/samplerate`,
+        async: false
+    }).done((data) => {
+        samplerate = data;
+    });
+    return Number(samplerate);
+}
+
+function getStimstart(){
+    var electrode = 127;
+    $.ajax({
+        url: `/stimstart/${electrode-1}`,
+        async: false
+    }).done((data) => {
+        stimstart = data;
+    });
+    return Number(stimstart);
+}
+
 function getConfig(){
     var config = 0;
     $.ajax({
@@ -267,6 +312,8 @@ function getConfig(){
     }).done(function(data){
         config = data;
     });
+    config.stimstart = getStimstart();
+    config.samplerate = getSampleRate();
     return config;
 }
 
