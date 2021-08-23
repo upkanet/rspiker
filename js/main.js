@@ -43,12 +43,12 @@ function open_el(mod,n){
         default: break;
     }
     dataloaderinit(1);
+    var config = getConfig();
     if(mod == "raster"){
-        var config = getConfig();
         plotERaster(`g-${mod}-el`,n, config);
     }
     else{
-        plotEdata(`g-${mod}-el`,modurl,n, layout);
+        plotEdata(`g-${mod}-el`,modurl,n, config);
     }
 }
 
@@ -92,6 +92,7 @@ function progress(n,t){
 
 //Slider
 function updateSlider(){
+    abortAll();
     $.getJSON("\config", function(config){
         $.getJSON("\duration", (duration) => {
             var s = Math.floor(duration / config.timewidth);
@@ -110,7 +111,8 @@ function refresh(){
         mod = mod2url(mod);
         g = g[0].id;
         dataloaderinit(1);
-        plotEdata(g,mod,e);
+        var config = getConfig();
+        plotEdata(g,mod,e,config);
     }
     else{
         populateGridName(id);
@@ -153,9 +155,10 @@ function populateGridName(name){
         case("filtered"): mod = "f"; break;
         default: return;
     }
+    var config = getConfig();
     dataloaderinit(256);
     for(var i = 1; i <= 256;i++){
-        plotEdata(`g-${name}-${i}`,mod,i,layout, { displayModeBar: false });
+        plotEdata(`g-${name}-${i}`,mod,i,config);
     }
 }
 
@@ -167,7 +170,12 @@ function populateRaster(){
     }
 }
 
-function plotEdata(graph,mod,electrode){
+function plotEdata(graph,mod,electrode,config){
+    var stimstart = config.stimstart;
+    var timewidth = config.timewidth;
+    var stimstartpos = stimstart%timewidth / timewidth;
+    var stimwidth = $('#stimduration').val() / 1000;
+    var stimendpos = (stimstart%timewidth + stimwidth) / timewidth;
     var s = $("#slider").val();
     var f = $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
         var d = $(`#${graph}`);
@@ -184,11 +192,11 @@ function plotEdata(graph,mod,electrode){
         d.append(`<canvas width="${w}" height="${h}"></canvas>`);
         var canvas = $(`#${graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
-        ctx.fillStyle="#1f77b4";
 
         data.forEach((v,k) => {
             var x = k / aw;
             var y = (v - abot) / ah;
+            ctx.fillStyle=plotColor(x,stimstartpos,stimendpos);
             ctx.fillRect(x * w,y * h,1,1);
         });
         dataloader();
@@ -223,18 +231,24 @@ function plotERaster(graph,electrode,config){
                 var t = k / sample_rate;
                 var x = t%tw / tw;
                 var y = Math.round(t/tw) / th;
-                if(x >= stimstartpos && x < stimendpos){
-                    ctx.fillStyle="red";
-                }
-                else{
-                    ctx.fillStyle="#1f77b4";
-                }
+                ctx.fillStyle=plotColor(x,stimstartpos,stimendpos);
                 ctx.fillRect(x * w,y * h,1,sh);
             }
         });
         dataloader();
     });
     abordable.push(f);
+}
+
+function plotColor(x,start,end){
+    //console.log(x,start,end);
+    if(x >= start && x < end){
+        col="red";
+    }
+    else{
+        col="#1f77b4";
+    }
+    return col;
 }
 
 function plotEstack(){
