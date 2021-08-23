@@ -5,6 +5,13 @@ function init(){
     updateSlider();
 }
 
+//Test
+function test(){
+    show(null);
+    $('#g-test').show();
+    plotEdata("g-test","a",127);
+}
+
 //Nav
 function tshow(e){
     var tn = $(e).data('tab');
@@ -92,7 +99,28 @@ function updateSlider(){
 
 function refresh(){
     var id = $('.tab-active').first().attr('id');
-    populateGridName(id);
+    if(id.includes('_el')){
+        var mod = id.split('_')[0];
+        var g = $(`#g-${mod}-el`);
+        var e = g.data('e');
+        mod = mod2url(mod);
+        g = g[0].id;
+        dataloaderinit(1);
+        plotEdata(g,mod,e);
+    }
+    else{
+        populateGridName(id);
+    }
+}
+
+function mod2url(modname){
+    var modurl = "";
+    switch(modname){
+        case("raw"): modurl = "e"; break;
+        case("filtered"): modurl = "f"; break;
+        default: console.log("mod2url : Unknown modname",modname);
+    }
+    return modurl;
 }
 
 //Graphics
@@ -139,6 +167,8 @@ function plotEdata(graph,mod,electrode){
     var s = $("#slider").val();
     $.getJSON(`/electrode/${mod}/${electrode-1}/timeslice/${s}`, (data) => {
         var d = $(`#${graph}`);
+        d.attr('data-e',electrode);
+        d.data('e',electrode);
         d.html('');
         var w = d.width();
         var h = d.height();
