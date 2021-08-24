@@ -225,7 +225,10 @@ function plotERaster(graph,electrode,config){
         d.append(`<canvas width="${w}" height="${h}"></canvas>`);
         var canvas = $(`#${graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
-        ctx.fillStyle="#1f77b4";
+        
+        //Stim Square
+        ctx.fillStyle="#1F1F1F";
+        ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
 
         data.forEach((v,k) => {
             if(v > 0){
