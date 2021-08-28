@@ -215,6 +215,7 @@ function plotERaster(graph,electrode,config){
     var f = $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
         var d = $(`#${graph}`);
         d.attr('data-e',electrode);
+        d.data('e',electrode);
         d.html('');
         var w = d.width();
         var h = d.height();
