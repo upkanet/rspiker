@@ -107,7 +107,7 @@ impl Electrode {
 }
 
 #[derive(Clone)]
-pub struct Record {
+pub struct Fileparam {
     pub filepath: String,
     pub sample_rate: u64,
     pub eoh: u64,
@@ -115,43 +115,20 @@ pub struct Record {
     pub header: String,
     pub adczero: u64,
     pub el: f64,
-    pub streams: u64,
-    pub duration: f64,
-    pub electrodes: Vec<Electrode>
+    pub streams: u64
 }
 
-#[derive(Deserialize)]
-pub struct Config {
-    pub fc: u64,
-    pub threshold: f64,
-    pub timewidth: u64
-}
-
-impl Record {
-    pub fn new(filepath: String) -> Record {
-        let electrodes: Vec<Electrode> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes };
-    }
-
-    pub const fn empty() -> Record {
+impl Fileparam {
+    pub const fn empty() -> Fileparam{
         let filepath: String = String::new();
         let header: String = String::new();
-        let electrodes: Vec<Electrode> = Vec::new();
-        return Record{ filepath, sample_rate: 0, eoh: 0, datastart: 0, header, adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes };
+        return Fileparam{filepath, sample_rate: 0, eoh: 0, datastart: 0, header, adczero: 0, el: 0.0, streams: 0};
     }
 
-    pub fn config(&self) -> Config{
-        let mut file = File::open("config.json").expect("Unable to open the file");
-        let mut contents = String::new();
-        io::Read::read_to_string(&mut file, &mut contents).expect("Unable to read the file");
-        let c:Config = serde_json::from_str(&contents).expect("JSON was not well-formatted");
-        return c;
-    }
-
-    pub fn load(&mut self){
+    pub fn load(&mut self, filepath: String){
+        self.filepath = filepath;
         self.findeoh();
         self.loadheader();
-        self.loaddata();
     }
 
     pub fn findeoh(&mut self)
@@ -215,23 +192,70 @@ impl Record {
         let val = l[pos..l.len()-1].to_string();
         return val;
     }
+}
+
+#[derive(Clone)]
+pub struct Record {
+    pub filepath: String,
+    pub fileparam: Fileparam,
+    pub duration: f64,
+    pub electrodes: Vec<Electrode>
+}
+
+#[derive(Deserialize)]
+pub struct Config {
+    pub fc: u64,
+    pub threshold: f64,
+    pub timewidth: u64
+}
+
+impl Record {
+    pub fn new(filepath: String) -> Record {
+        let electrodes: Vec<Electrode> = Vec::new();
+        let fileparam: Fileparam = Fileparam::empty();
+        return Record{ filepath, fileparam, duration: 0.0, electrodes };
+    }
+
+    pub const fn empty() -> Record {
+        let filepath: String = String::new();
+        let fileparam: Fileparam = Fileparam::empty();
+        let electrodes: Vec<Electrode> = Vec::new();
+        return Record{ filepath, fileparam, duration: 0.0, electrodes };
+    }
+
+    pub fn config(&self) -> Config{
+        let mut file = File::open("config.json").expect("Unable to open the file");
+        let mut contents = String::new();
+        io::Read::read_to_string(&mut file, &mut contents).expect("Unable to read the file");
+        let c:Config = serde_json::from_str(&contents).expect("JSON was not well-formatted");
+        return c;
+    }
+
+    pub fn load(&mut self){
+        self.loadfileparam();
+        self.loaddata();
+    }
+    
+    fn loadfileparam(&mut self){
+        self.fileparam.load(self.filepath.to_string());
+    }
 
     pub fn loaddata(&mut self){
         let mut file = File::open(&self.filepath).expect("Introuvable");
-        file.seek(SeekFrom::Start(self.datastart)).expect("No");
+        file.seek(SeekFrom::Start(self.fileparam.datastart)).expect("No");
         let metadata = file.metadata().expect("No");
-        let bytes = metadata.len() - self.datastart; //File length minus header
-        self.duration = bytes as f64 / 2.0 / self.sample_rate as f64 / self.streams as f64; // divided by 2 because 2 x u8 = 1 x i16
+        let bytes = metadata.len() - self.fileparam.datastart; //File length minus header
+        self.duration = bytes as f64 / 2.0 / self.fileparam.sample_rate as f64 / self.fileparam.streams as f64; // divided by 2 because 2 x u8 = 1 x i16
         let mut buffer = vec!(0;bytes as usize);
         file.read(&mut buffer).expect("Pb");
         self.bin2electrode(buffer);
     }
     
     fn bin2electrode(&mut self, bin: Vec<u8>){
-        self.electrodes = vec![Electrode::new();self.streams as usize];
+        self.electrodes = vec![Electrode::new();self.fileparam.streams as usize];
         let mut k = 0;
         while k+1+2*256 < bin.len() {
-            for n in 0..self.streams {
+            for n in 0..self.fileparam.streams {
                 self.electrodes[n as usize].raw.push((((bin[k] as i16) << 8) | bin[k+1] as i16) as f64);
                 k += 2;
             }
@@ -239,28 +263,28 @@ impl Record {
     }
 
     pub fn filter(&mut self){
-        for n in 0..self.streams {
+        for n in 0..self.fileparam.streams {
             let fc = self.config().fc;
-            self.electrodes[n as usize].filter(fc, self.sample_rate);
+            self.electrodes[n as usize].filter(fc, self.fileparam.sample_rate);
         }  
     }
 
     pub fn spikersort(&mut self){
-        for n in 0..self.streams {
+        for n in 0..self.fileparam.streams {
             let t = self.config().threshold;
             self.electrodes[n as usize].spikesort(t);
         }
     }
 
     pub fn heatmap(&mut self){
-        for n in 0..self.streams {
+        for n in 0..self.fileparam.streams {
             self.electrodes[n as usize].heatmap();
         }
     }
 
     pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
-        let k = (s * self.config().timewidth * self.sample_rate) as usize;
-        let mut k2 = ((s + 1) * self.config().timewidth * self.sample_rate) as usize;
+        let k = (s * self.config().timewidth * self.fileparam.sample_rate) as usize;
+        let mut k2 = ((s + 1) * self.config().timewidth * self.fileparam.sample_rate) as usize;
         let mut el:Vec<f64> = Vec::new();
         if m == "e"{
             el = self.electrodes[n].raw.to_vec();
@@ -289,7 +313,7 @@ impl Record {
                 break;
             }
         }
-        return stimstart as f64 / self.sample_rate as f64;
+        return stimstart as f64 / self.fileparam.sample_rate as f64;
     }
 }
 

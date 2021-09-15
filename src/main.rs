@@ -2,7 +2,6 @@
 
 #[macro_use] extern crate rocket;
 
-use rocket::State;
 use rocket::response::NamedFile;
 use rocket::response::status::NotFound;
 use std::path::Path;
@@ -53,7 +52,7 @@ fn timeslice(m: String, n: usize, s: u64) -> String {
 fn samplerate() -> String {
     let mut sr = String::new();
     unsafe{
-        sr = r.sample_rate.to_string();
+        sr = r.fileparam.sample_rate.to_string();
     }
     return sr;
 }
@@ -119,15 +118,6 @@ fn main() {
         println!("Loading Data...");
         r.load();
         println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
-        println!("Filtering Data...");
-        r.filter();
-        println!("Filtering Data - Time elapsed : {}", now.elapsed().as_secs());
-        println!("SpikeSort Data...");
-        r.spikersort();
-        println!("SpikeSorting Data - Time elapsed : {}", now.elapsed().as_secs());
-        println!("HeatMap Data...");
-        r.heatmap();
-        println!("HeatMapped Data - Time elapsed : {}", now.elapsed().as_secs());
     }
     rocket::ignite()
         .attach(rocket::fairing::AdHoc::on_launch("Open Browser", |_x| {
