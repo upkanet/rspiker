@@ -16,43 +16,66 @@ use wfd::{DialogParams};
 mod record;
 use record::Record;
 
+static mut r: Record = Record::empty();
+
 #[get("/electrode/<m>/<n>")]
-fn electrode(r: State<Record>, m: String, n: usize) -> String {
+fn electrode(m: String, n: usize) -> String {
     let mut el:Vec<f64> = Vec::new();
     if m == "e"{
-        el = r.electrodes[n].raw.to_vec();
+        unsafe{
+            el = r.electrodes[n].raw.to_vec();
+        }
     }
     else if m == "f" {
-        el = r.electrodes[n].filtered.to_vec();
+        unsafe {
+            el = r.electrodes[n].filtered.to_vec();
+        }
     }
     else if m == "s" {
-        el = r.electrodes[n].spikesorted.to_vec();
+        unsafe{
+            el = r.electrodes[n].spikesorted.to_vec();
+        }
     }
     let j = json!(el);
     return j.to_string();
 }
 
 #[get("/electrode/<m>/<n>/timeslice/<s>")]
-fn timeslice(r: State<Record>, m: String, n: usize, s: u64) -> String {
-    let el = r.timeslice(m.as_str(), s, n);
-    let j = json!(el);
-    return j.to_string();
+fn timeslice(m: String, n: usize, s: u64) -> String {
+    unsafe{
+        let el = r.timeslice(m.as_str(), s, n);
+        let j = json!(el);
+        return j.to_string();
+    }
 }
 
 #[get("/samplerate")]
-fn samplerate(r: State<Record>) -> String {
-    return r.sample_rate.to_string();
+fn samplerate() -> String {
+    let mut sr = String::new();
+    unsafe{
+        sr = r.sample_rate.to_string();
+    }
+    return sr;
 }
 
 #[get("/duration")]
-fn duration(r: State<Record>) -> String {
-    return r.duration.to_string();
+fn duration() -> String {
+    let mut d = String::new();
+    unsafe {
+        d = r.duration.to_string();
+    }
+    return d;
 }
 
 #[get("/stimstart/<n>")]
-fn stimstart(r: State<Record>, n: usize) -> String {
-    return r.stimstart(n).to_string();
+fn stimstart(n: usize) -> String {
+    let mut ss = String::new();
+    unsafe{
+        ss = r.stimstart(n).to_string();
+    }
+    return ss;
 }
+
 
 #[get("/js/<f>")]
 fn js(f: String) -> Result<NamedFile, NotFound<String>> {
@@ -90,22 +113,23 @@ fn main() {
     let dialog_result = wfd::open_dialog(params).expect("Open Dialog Error");
     let fpath = dialog_result.selected_file_paths[0].to_str().unwrap();
     println!("RSpiker launch on {}", fpath);
-    let mut r = Record::new(fpath.to_string());
     let now = Instant::now();
-    println!("Loading Data...");
-    r.load();
-    println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
-    println!("Filtering Data...");
-    r.filter();
-    println!("Filtering Data - Time elapsed : {}", now.elapsed().as_secs());
-    println!("SpikeSort Data...");
-    r.spikersort();
-    println!("SpikeSorting Data - Time elapsed : {}", now.elapsed().as_secs());
-    println!("HeatMap Data...");
-    r.heatmap();
-    println!("HeatMapped Data - Time elapsed : {}", now.elapsed().as_secs());
+    unsafe {
+        r = Record::new(fpath.to_string());
+        println!("Loading Data...");
+        r.load();
+        println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
+        println!("Filtering Data...");
+        r.filter();
+        println!("Filtering Data - Time elapsed : {}", now.elapsed().as_secs());
+        println!("SpikeSort Data...");
+        r.spikersort();
+        println!("SpikeSorting Data - Time elapsed : {}", now.elapsed().as_secs());
+        println!("HeatMap Data...");
+        r.heatmap();
+        println!("HeatMapped Data - Time elapsed : {}", now.elapsed().as_secs());
+    }
     rocket::ignite()
-        .manage(r)
         .attach(rocket::fairing::AdHoc::on_launch("Open Browser", |_x| {
             if webbrowser::open("http://localhost:8000/").is_ok() {
                 println!("Open web browser");

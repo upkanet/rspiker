@@ -133,6 +133,13 @@ impl Record {
         return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes };
     }
 
+    pub const fn empty() -> Record {
+        let filepath: String = String::new();
+        let header: String = String::new();
+        let electrodes: Vec<Electrode> = Vec::new();
+        return Record{ filepath, sample_rate: 0, eoh: 0, datastart: 0, header, adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes };
+    }
+
     pub fn config(&self) -> Config{
         let mut file = File::open("config.json").expect("Unable to open the file");
         let mut contents = String::new();
