@@ -20,13 +20,13 @@ use record::Record;
 fn electrode(r: State<Record>, m: String, n: usize) -> String {
     let mut el:Vec<f64> = Vec::new();
     if m == "e"{
-        el = r.electrodes[n].to_vec();
+        el = r.electrodes[n].raw.to_vec();
     }
     else if m == "f" {
-        el = r.felectrodes[n].to_vec();
+        el = r.electrodes[n].filtered.to_vec();
     }
     else if m == "s" {
-        el = r.espiker(n);
+        el = r.electrodes[n].spikesorted.to_vec();
     }
     let j = json!(el);
     return j.to_string();
@@ -98,6 +98,12 @@ fn main() {
     println!("Filtering Data...");
     r.filter();
     println!("Filtering Data - Time elapsed : {}", now.elapsed().as_secs());
+    println!("SpikeSort Data...");
+    r.spikersort();
+    println!("SpikeSorting Data - Time elapsed : {}", now.elapsed().as_secs());
+    println!("HeatMap Data...");
+    r.heatmap();
+    println!("HeatMapped Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
         .attach(rocket::fairing::AdHoc::on_launch("Open Browser", |_x| {
