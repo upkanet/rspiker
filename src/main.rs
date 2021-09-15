@@ -23,7 +23,7 @@ fn electrode(r: State<Record>, m: String, n: usize) -> String {
         el = r.electrodes[n].to_vec();
     }
     else if m == "f" {
-        el = r.efilter(n);
+        el = r.felectrodes[n].to_vec();
     }
     else if m == "s" {
         el = r.espiker(n);
@@ -92,9 +92,12 @@ fn main() {
     println!("RSpiker launch on {}", fpath);
     let mut r = Record::new(fpath.to_string());
     let now = Instant::now();
-    println!("Loading data...");
+    println!("Loading Data...");
     r.load();
     println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
+    println!("Filtering Data...");
+    r.filter();
+    println!("Filtering Data - Time elapsed : {}", now.elapsed().as_secs());
     rocket::ignite()
         .manage(r)
         .attach(rocket::fairing::AdHoc::on_launch("Open Browser", |_x| {

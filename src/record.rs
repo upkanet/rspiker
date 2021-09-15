@@ -21,7 +21,8 @@ pub struct Record {
     pub el: f64,
     pub streams: u64,
     pub duration: f64,
-    pub electrodes: Vec<Vec<f64>>
+    pub electrodes: Vec<Vec<f64>>,
+    pub felectrodes: Vec<Vec<f64>>
 }
 
 #[derive(Deserialize)]
@@ -34,7 +35,8 @@ pub struct Config {
 impl Record {
     pub fn new(filepath: String) -> Record {
         let electrodes: Vec<Vec<f64>> = Vec::new();
-        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes };
+        let felectrodes: Vec<Vec<f64>> = Vec::new();
+        return Record{ filepath , sample_rate: 0, eoh: 0, datastart: 0, header:"".to_string(), adczero: 0, el: 0.0, streams: 0, duration: 0.0, electrodes, felectrodes };
     }
 
     pub fn config(&self) -> Config{
@@ -135,6 +137,13 @@ impl Record {
         }
     }
 
+    pub fn filter(&mut self){
+        self.felectrodes = vec![vec![0.0];self.streams as usize];
+        for n in 0..self.streams {
+            self.felectrodes[n as usize] = self.efilter(n as usize);
+        }  
+    }
+
     pub fn efilter(&self,n: usize) -> Vec<f64>{
         let fc = self.config().fc;
         //println!("High Pass Filtering at {}Hz on electrode #{}",fc,n);
@@ -160,7 +169,7 @@ impl Record {
     pub fn espiker(&self, n: usize) -> Vec<f64>{
         let threshold = self.config().threshold;
         //println!("Spiker Sorting at {} std-dev on electrode #{}",threshold,n);
-        let fe = self.efilter(n).to_vec();
+        let fe = self.felectrodes[n].to_vec();
         let avg = match mean(&fe){
             Some(v) => v,
             None => 0.0
@@ -198,6 +207,28 @@ impl Record {
 
     }
 
+    pub fn ehm(&self, n: usize) -> Vec<f64>{
+        let fe = self.felectrodes[n].to_vec();
+        let avg = match mean(&fe){
+            Some(v) => v,
+            None => 0.0
+        };
+        let stddev = match std_deviation(&fe){
+            Some(v) => v,
+            None => 0.0
+        };
+
+        let mut hme = fe.to_vec();
+
+        for k in 0..hme.len() {
+            let v = (fe[k] - avg) / stddev;
+            hme[k] = v.round();
+        }
+
+        return hme;
+
+    }
+
     pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
         let k = (s * self.config().timewidth * self.sample_rate) as usize;
         let mut k2 = ((s + 1) * self.config().timewidth * self.sample_rate) as usize;
@@ -206,10 +237,13 @@ impl Record {
             el = self.electrodes[n].to_vec();
         }
         else if m == "f" {
-            el = self.efilter(n);
+            el = self.felectrodes[n].to_vec();
         }
         else if m == "s" {
             el = self.espiker(n);
+        }
+        else if m == "hm" {
+            el = self.ehm(n);
         }
         if k2 > el.len(){
             k2 = el.len();
