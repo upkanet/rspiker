@@ -19,24 +19,11 @@ static mut r: Record = Record::empty();
 
 #[get("/electrode/<m>/<n>")]
 fn electrode(m: String, n: usize) -> String {
-    let mut el:Vec<f64> = Vec::new();
-    if m == "e"{
-        unsafe{
-            el = r.electrodes[n].raw.to_vec();
-        }
+    unsafe{
+        let el = r.full(m.as_str(), n);
+        let j = json!(el);
+        return j.to_string();
     }
-    else if m == "f" {
-        unsafe {
-            el = r.electrodes[n].filtered.to_vec();
-        }
-    }
-    else if m == "s" {
-        unsafe{
-            el = r.electrodes[n].spikesorted.to_vec();
-        }
-    }
-    let j = json!(el);
-    return j.to_string();
 }
 
 #[get("/electrode/<m>/<n>/timeslice/<s>")]

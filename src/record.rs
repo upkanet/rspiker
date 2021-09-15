@@ -10,101 +10,28 @@ use std::io::SeekFrom;
 
 use serde::Deserialize;
 
-#[derive(Clone)]
-pub struct Electrode {
-    pub raw: Vec<f64>,
-    pub filtered: Vec<f64>,
-    pub spikesorted: Vec<f64>,
-    pub heatmapped: Vec<f64>
+#[derive(Clone, Deserialize)]
+pub struct Config {
+    pub fc: u64,
+    pub threshold: f64,
+    pub timewidth: u64
 }
 
-impl Electrode {
-    pub fn new() -> Electrode {
-        let raw: Vec<f64> = Vec::new();
-        let filtered: Vec<f64> = Vec::new();
-        let spikesorted: Vec<f64> = Vec::new();
-        let heatmapped: Vec<f64> = Vec::new();
-        return Electrode{raw,filtered,spikesorted,heatmapped};
+impl Config {
+    pub const fn new() -> Config{
+        return Config{fc: 0, threshold: 0.0, timewidth: 0};
     }
 
-    pub fn filter(&mut self, fc: u64, sample_rate: u64) {
-        let pi = std::f64::consts::PI;
-        let rc = 1.0/(2.0 * pi * fc as f64);
-        let dt = 1.0 / sample_rate as f64;
-        let alpha = rc / (rc + dt);
-
-        let mut fe = self.raw.to_vec();
-
-        for k in 1..fe.len() {
-            let x = self.raw[k];
-            let ykm1 = fe[k-1];
-            let xkm1 = self.raw[k-1];
-            let yk = alpha * (ykm1 + x - xkm1);
-            fe[k] = yk;
-        }
-
-        self.filtered = fe;
-    }
-
-    pub fn spikesort(&mut self, threshold:f64){
-        let fe = self.filtered.to_vec();
-        let avg = match mean(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-        let stddev = match std_deviation(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-
-        let mut se = fe.to_vec();
-
-        se[0] = 0.0;
-
-        for k in 1..se.len() {
-            // Y m-1
-            let ym1 = fe[k-1];
-            let y = fe[k];
-            let tup = avg + threshold * stddev;
-            let tdown = avg - threshold * stddev;
-
-            // Asc front
-            if (ym1 <= tup) && (y > tup){
-                se[k] = 1.0;
-            }
-            // Desc front
-            else if (ym1 >= tdown) && (y < tdown){
-                se[k] = 1.0;
-            }
-            else{
-                se[k] = 0.0;
-            }
-        }
-
-        self.spikesorted = se;
-    }
-
-    pub fn heatmap(&mut self){
-        let fe = self.filtered.to_vec();
-        let avg = match mean(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-        let stddev = match std_deviation(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-
-        let mut hme = fe.to_vec();
-
-        for k in 0..hme.len() {
-            let v = (fe[k] - avg) / stddev;
-            hme[k] = v.round();
-        }
-
-        self.heatmapped = hme;
+    pub fn get() -> Config{
+        let mut file = File::open("config.json").expect("Unable to open the file");
+        let mut contents = String::new();
+        io::Read::read_to_string(&mut file, &mut contents).expect("Unable to read the file");
+        let c:Config = serde_json::from_str(&contents).expect("JSON was not well-formatted");
+        return c;
     }
 }
+
+static mut CONFIG: Config = Config::new();
 
 #[derive(Clone)]
 pub struct Fileparam {
@@ -195,6 +122,135 @@ impl Fileparam {
 }
 
 #[derive(Clone)]
+pub struct Electrode {
+    pub sample_rate: u64,
+    pub raw: Vec<f64>,
+    pub filtered: Vec<f64>,
+    pub spikesorted: Vec<f64>,
+    pub heatmapped: Vec<f64>,
+    pub status: ElectrodeStatus
+}
+
+impl Electrode {
+    pub fn new(sample_rate: u64) -> Electrode {
+        let raw: Vec<f64> = Vec::new();
+        let filtered: Vec<f64> = Vec::new();
+        let spikesorted: Vec<f64> = Vec::new();
+        let heatmapped: Vec<f64> = Vec::new();
+        let status: ElectrodeStatus = ElectrodeStatus::new();
+        return Electrode{sample_rate, raw,filtered,spikesorted,heatmapped, status};
+    }
+
+    pub fn filter(&mut self) {
+        let mut fc = 0;
+        unsafe{
+            fc = CONFIG.fc;
+        }
+        let pi = std::f64::consts::PI;
+        let rc = 1.0/(2.0 * pi * fc as f64);
+        let dt = 1.0 / self.sample_rate as f64;
+        let alpha = rc / (rc + dt);
+
+        let mut fe = self.raw.to_vec();
+
+        for k in 1..fe.len() {
+            let x = self.raw[k];
+            let ykm1 = fe[k-1];
+            let xkm1 = self.raw[k-1];
+            let yk = alpha * (ykm1 + x - xkm1);
+            fe[k] = yk;
+        }
+
+        self.filtered = fe;
+        self.status.filtered = true;
+    }
+
+    pub fn spikesort(&mut self){
+        let mut threshold = 0.0;
+        unsafe{
+            threshold = CONFIG.threshold;
+        }
+        if !self.status.filtered {
+            self.filter();
+        }
+        let fe = self.filtered.to_vec();
+        let avg = match mean(&fe){
+            Some(v) => v,
+            None => 0.0
+        };
+        let stddev = match std_deviation(&fe){
+            Some(v) => v,
+            None => 0.0
+        };
+
+        let mut se = fe.to_vec();
+
+        se[0] = 0.0;
+
+        for k in 1..se.len() {
+            // Y m-1
+            let ym1 = fe[k-1];
+            let y = fe[k];
+            let tup = avg + threshold * stddev;
+            let tdown = avg - threshold * stddev;
+
+            // Asc front
+            if (ym1 <= tup) && (y > tup){
+                se[k] = 1.0;
+            }
+            // Desc front
+            else if (ym1 >= tdown) && (y < tdown){
+                se[k] = 1.0;
+            }
+            else{
+                se[k] = 0.0;
+            }
+        }
+
+        self.spikesorted = se;
+        self.status.spikesorted = true;
+    }
+
+    pub fn heatmap(&mut self){
+        if !self.status.filtered {
+            self.filter()
+        }
+        let fe = self.filtered.to_vec();
+        let avg = match mean(&fe){
+            Some(v) => v,
+            None => 0.0
+        };
+        let stddev = match std_deviation(&fe){
+            Some(v) => v,
+            None => 0.0
+        };
+
+        let mut hme = fe.to_vec();
+
+        for k in 0..hme.len() {
+            let v = (fe[k] - avg) / stddev;
+            hme[k] = v.round();
+        }
+
+        self.heatmapped = hme;
+        self.status.heatmapped = true;
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct ElectrodeStatus {
+    pub filtered: bool,
+    pub spikesorted: bool,
+    pub heatmapped: bool
+}
+
+impl ElectrodeStatus {
+    pub const fn new() -> ElectrodeStatus{
+        ElectrodeStatus{ filtered: false, spikesorted: false, heatmapped: false}
+    }
+}
+
+#[derive(Clone)]
 pub struct Record {
     pub filepath: String,
     pub fileparam: Fileparam,
@@ -202,15 +258,11 @@ pub struct Record {
     pub electrodes: Vec<Electrode>
 }
 
-#[derive(Deserialize)]
-pub struct Config {
-    pub fc: u64,
-    pub threshold: f64,
-    pub timewidth: u64
-}
-
 impl Record {
     pub fn new(filepath: String) -> Record {
+        unsafe {
+            CONFIG = Config::get();
+        }
         let electrodes: Vec<Electrode> = Vec::new();
         let fileparam: Fileparam = Fileparam::empty();
         return Record{ filepath, fileparam, duration: 0.0, electrodes };
@@ -223,13 +275,7 @@ impl Record {
         return Record{ filepath, fileparam, duration: 0.0, electrodes };
     }
 
-    pub fn config(&self) -> Config{
-        let mut file = File::open("config.json").expect("Unable to open the file");
-        let mut contents = String::new();
-        io::Read::read_to_string(&mut file, &mut contents).expect("Unable to read the file");
-        let c:Config = serde_json::from_str(&contents).expect("JSON was not well-formatted");
-        return c;
-    }
+    
 
     pub fn load(&mut self){
         self.loadfileparam();
@@ -252,7 +298,7 @@ impl Record {
     }
     
     fn bin2electrode(&mut self, bin: Vec<u8>){
-        self.electrodes = vec![Electrode::new();self.fileparam.streams as usize];
+        self.electrodes = vec![Electrode::new(self.fileparam.sample_rate);self.fileparam.streams as usize];
         let mut k = 0;
         while k+1+2*256 < bin.len() {
             for n in 0..self.fileparam.streams {
@@ -262,46 +308,66 @@ impl Record {
         }
     }
 
-    pub fn filter(&mut self){
-        for n in 0..self.fileparam.streams {
-            let fc = self.config().fc;
-            self.electrodes[n as usize].filter(fc, self.fileparam.sample_rate);
-        }  
-    }
-
-    pub fn spikersort(&mut self){
-        for n in 0..self.fileparam.streams {
-            let t = self.config().threshold;
-            self.electrodes[n as usize].spikesort(t);
-        }
-    }
-
-    pub fn heatmap(&mut self){
-        for n in 0..self.fileparam.streams {
-            self.electrodes[n as usize].heatmap();
-        }
-    }
-
-    pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
-        let k = (s * self.config().timewidth * self.fileparam.sample_rate) as usize;
-        let mut k2 = ((s + 1) * self.config().timewidth * self.fileparam.sample_rate) as usize;
-        let mut el:Vec<f64> = Vec::new();
+    pub fn full(&mut self, m: &str,n: usize) -> Vec<f64>{
+        let mut el: Vec<f64> = Vec::new();
         if m == "e"{
             el = self.electrodes[n].raw.to_vec();
         }
         else if m == "f" {
+            if !self.electrodes[n].status.filtered {
+                self.electrodes[n].filter()
+            }
             el = self.electrodes[n].filtered.to_vec();
         }
         else if m == "s" {
+            if !self.electrodes[n].status.spikesorted {
+                self.electrodes[n].spikesort();
+            }
             el = self.electrodes[n].spikesorted.to_vec();
         }
         else if m == "hm" {
+            if !self.electrodes[n].status.heatmapped {
+                self.electrodes[n].heatmap();
+            }
             el = self.electrodes[n].heatmapped.to_vec();
         }
-        if k2 > el.len(){
-            k2 = el.len();
+        return el;
+    }
+
+    pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
+        let mut timewidth = 0;
+        unsafe {
+            timewidth = CONFIG.timewidth;
         }
-        return el[k..k2].to_vec();
+        let k = (s * timewidth * self.fileparam.sample_rate) as usize;
+        let mut k2 = ((s + 1) * timewidth * self.fileparam.sample_rate) as usize;
+        let mut el:Electrode = self.electrodes[n].clone();
+        let mut el2: Vec<f64> = Vec::new();
+        if m == "e"{
+            el2 = el.raw.to_vec();
+        }
+        else if m == "f" {
+            if !el.status.filtered {
+                el.filter()
+            }
+            el2 = el.filtered.to_vec();
+        }
+        else if m == "s" {
+            if !el.status.spikesorted {
+                el.spikesort();
+            }
+            el2 = el.spikesorted.to_vec();
+        }
+        else if m == "hm" {
+            if !el.status.heatmapped {
+                el.heatmap();
+            }
+            el2 = el.heatmapped.to_vec();
+        }
+        if k2 > el2.len(){
+            k2 = el2.len();
+        }
+        return el2[k..k2].to_vec();
     }
 
     pub fn stimstart(&self, n:usize) -> f64 {
