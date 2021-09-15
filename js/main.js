@@ -17,6 +17,9 @@ function tshow(e){
     if(tn == "raster"){
         populateRaster();
     }
+    if(tn == "heatmap"){
+        populateHeatmap();
+    }
     show(tn);
 }
 
@@ -134,13 +137,14 @@ function initGrid(){
     initGridName("raw");
     initGridName("filtered");
     initGridName("raster");
+    initGridName("heatmap");
 }
 
 function initGridName(name){
     var config = getConfig();
     var grid = $(`#${name}`);
     grid.append('<div class="el-grid"></div>');
-    grid = grid.children().first();
+    grid = grid.children().last();
     for(var i = 0; i < 256;i++){
         var el = config.map_mea[i];
         grid.append(`<div class="col e-tile" onclick="open_el('${name}',${el})"><div id="g-${name}-${el}" data-e="${el}" style="width:100%;height:100%;"></div></div>`);
@@ -153,6 +157,7 @@ function populateGridName(name){
     switch(name){
         case("raw"): mod = "e"; break;
         case("filtered"): mod = "f"; break;
+        case("heatmap"): populateHeatmap();
         default: return;
     }
     var config = getConfig();
@@ -168,6 +173,50 @@ function populateRaster(){
     for(var i = 1; i <= 256;i++){
         plotERaster(`g-raster-${i}`,i, config);
     }
+}
+
+function populateHeatmap(){
+    var config = getConfig();
+    $('#microslider').attr("max",config.timewidth * config.samplerate);
+    $('#microslider').val(config.stimstart % config.timewidth * config.samplerate);
+    updateMicroSlider();
+}
+
+function updateMicroSlider(){
+    var v = $('#microslider').val();
+    console.log(v);
+    plotHM();
+}
+
+function plotHM(){
+    var s = $("#slider").val();
+    var ms = $("#microslider").val();
+    var a = Array(256);
+    for(var i = 1; i <= 256;i++){
+        $.ajax({
+            dataType: "json",
+            url: `/electrode/hm/${i-1}/timeslice/${s}`,
+            async: false
+        }).done((data) => {
+            a[i-1] = data[ms];
+        });
+    }
+    console.log(a);
+}
+
+function plotEHM(graph,electrode){
+    /*var f = $.getJSON(`/electrode/hm/${electrode-1}/timeslice/${s}`, (data) => {
+        var v = data[ms]*10;
+        if(v>255) v=255;
+        if(v<-255) v=-255;
+        var r = 0;
+        var g = 0;
+        if(v>=0) g = v;
+        if(v<0) r = -v;
+        $(`#${graph}`).css("background-color",`rgb(${r},${g},0)`);
+    });*/
+
+    //abordable.push(f);
 }
 
 function plotEdata(graph,mod,electrode,config){

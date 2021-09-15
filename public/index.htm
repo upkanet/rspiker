@@ -87,6 +87,9 @@
             <a class="nav-link" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" data-tab="heatmap" onclick="javascript:tshow(this);">Heatmap</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);">Config</a>
         </li>
     </ul>
@@ -105,6 +108,7 @@
             <button type="button" class="btn btn-primary" data-tab="raw" onclick="javascript:tshow(this);">Raw</button>
             <button type="button" class="btn btn-primary" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</button>
             <button type="button" class="btn btn-primary" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</button>
+            <button type="button" class="btn btn-primary" data-tab="heatmap" onclick="javascript:tshow(this);">Heatmap</button>
             <button type="button" class="btn btn-primary" data-tab="config" onclick="javascript:tshow(this);">Config</button>
         </div>
     </div>
@@ -126,6 +130,22 @@
                 <button type="button" class="btn btn-lg btn-primary" onclick="plotEstack()">Stack</button>
             </div>
             <div id="g-stack-el" style="width:100%;height:calc(100% - 200px); display:none;" onclick="$(this).hide()"></div>
+        </div>
+    </div>
+    <div class="tab" id="heatmap">
+        <div class="container">
+            <div class="row">
+                <input id="microslider" type="range" class="form-range" min="0" max="5" value="0" onchange="updateMicroSlider()">
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-3">
+                    <div class="btn-group btn-group-lg" role="group">
+                        <button type="button" class="btn btn-primary">&lt;</button>
+                        <button type="button" class="btn btn-primary">Play</button>
+                        <button type="button" class="btn btn-primary">&gt;</button>
+                      </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="tab" id="config">
