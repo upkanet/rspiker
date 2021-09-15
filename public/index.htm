@@ -135,14 +135,15 @@
     <div class="tab" id="heatmap">
         <div class="container">
             <div class="row">
-                <input id="microslider" type="range" class="form-range" min="0" max="5" value="0" onchange="updateMicroSlider()">
-            </div>
-            <div class="row justify-content-center">
+                <div class="col-9">
+                    <input id="microslider" type="range" class="form-range" min="0" max="5" value="0" onchange="updateMicroSlider()">
+                </div>
                 <div class="col-3">
-                    <div class="btn-group btn-group-lg" role="group">
-                        <button type="button" class="btn btn-primary">&lt;</button>
-                        <button type="button" class="btn btn-primary">Play</button>
-                        <button type="button" class="btn btn-primary">&gt;</button>
+                    <div class="input-group">
+                        <button type="button" class="btn btn-secondary" onclick="microSliderDown()">&lt;</button>
+                        <button type="button" class="btn btn-secondary" onclick="setMicroSlider()">Stim Start</button>
+                        <input id="heatmap-ms" type="text" class="form-control form-control-sm" data-samplerate="">
+                        <button type="button" class="btn btn-secondary" onclick="microSliderUp()">&gt;</button>
                       </div>
                 </div>
             </div>

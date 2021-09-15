@@ -96,6 +96,7 @@ function progress(n,t){
 //Slider
 function updateSlider(){
     abortAll();
+    heatmap = Array(256);
     $.getJSON("\config", function(config){
         $.getJSON("\duration", (duration) => {
             var s = Math.floor(duration / config.timewidth);
@@ -175,48 +176,96 @@ function populateRaster(){
     }
 }
 
+var heatmap = Array(256);
+
 function populateHeatmap(){
     var config = getConfig();
     $('#microslider').attr("max",config.timewidth * config.samplerate);
+    $('#heatmap-ms').attr('data-samplerate',config.samplerate);
+    setMicroSlider();
+    loadHM();
+}
+
+function loadHM(){
+    var s = $("#slider").val();
+    for(var i = 1; i <= 256;i++){
+        $.ajax({
+            dataType: 'json',
+            type: 'get',
+            url: `/electrode/hm/${i-1}/timeslice/${s}`,
+            beforeSend: function(jqXHR, settings) {
+                jqXHR.electrode = i;
+            }
+        }).done((data, textStatus, jqXHR)=>{
+            heatmap[jqXHR.electrode-1] = data;
+            showHM();
+        });
+    }
+}
+
+function updateMicroSlider(){
+    updateMS();
+    showHM();
+}
+
+function updateMS(){
+    var hmms = $('#heatmap-ms');
+    var ms = $('#microslider').val();
+    var samplerate = hmms.data('samplerate');
+    var sec = ms/samplerate;
+    hmms.val(Math.round(sec*1000*100)/100+" ms");
+}
+
+function setMicroSlider(){
+    var config = getConfig();
     $('#microslider').val(config.stimstart % config.timewidth * config.samplerate);
     updateMicroSlider();
 }
 
-function updateMicroSlider(){
-    var v = $('#microslider').val();
-    console.log(v);
-    plotHM();
-}
+document.addEventListener('keydown', logKey);
 
-function plotHM(){
-    var s = $("#slider").val();
-    var ms = $("#microslider").val();
-    var a = Array(256);
-    for(var i = 1; i <= 256;i++){
-        $.ajax({
-            dataType: "json",
-            url: `/electrode/hm/${i-1}/timeslice/${s}`,
-            async: false
-        }).done((data) => {
-            a[i-1] = data[ms];
-        });
+function logKey(e){
+    var k = e.key;
+    if(k == "ArrowRight"){
+        microSliderUp();
     }
-    console.log(a);
+    if(k == "ArrowLeft"){
+        microSliderDown();
+    }
 }
 
-function plotEHM(graph,electrode){
-    /*var f = $.getJSON(`/electrode/hm/${electrode-1}/timeslice/${s}`, (data) => {
-        var v = data[ms]*10;
+function microSliderUp(){
+    var ms = $('#microslider');
+    var msv = Number(ms.val());
+    ms.val(msv+1);
+    updateMicroSlider();
+}
+
+function microSliderDown(){
+    var ms = $('#microslider');
+    var msv = Number(ms.val());
+    ms.val(msv-1);
+    updateMicroSlider();
+}
+
+function showHM(){
+    if(!heatmap.includes(undefined)){
+        var ms = $('#microslider').val();
+        plotHM(ms);
+    }
+}
+
+function plotHM(ms){
+    for(var i = 1; i <= 256;i++){
+        var v = heatmap[i-1][ms]*20;
         if(v>255) v=255;
         if(v<-255) v=-255;
         var r = 0;
         var g = 0;
         if(v>=0) g = v;
         if(v<0) r = -v;
-        $(`#${graph}`).css("background-color",`rgb(${r},${g},0)`);
-    });*/
-
-    //abordable.push(f);
+        $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);
+    }
 }
 
 function plotEdata(graph,mod,electrode,config){
