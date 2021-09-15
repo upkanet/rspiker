@@ -16,44 +16,25 @@ use wfd::{DialogParams};
 mod record;
 use record::Record;
 
-#[get("/electrode/e/<n>")]
-fn electrode(r: State<Record>, n: usize) -> String {
-    let el = r.electrodes[n].to_vec();
+#[get("/electrode/<m>/<n>")]
+fn electrode(r: State<Record>, m: String, n: usize) -> String {
+    let mut el:Vec<f64> = Vec::new();
+    if m == "e"{
+        el = r.electrodes[n].to_vec();
+    }
+    else if m == "f" {
+        el = r.efilter(n);
+    }
+    else if m == "s" {
+        el = r.espiker(n);
+    }
     let j = json!(el);
     return j.to_string();
 }
 
-#[get("/electrode/e/<n>/timeslice/<s>")]
-fn timeslice(r: State<Record>, n: usize, s: u64) -> String {
-    let el = r.timeslice("e", s, n);
-    let j = json!(el);
-    return j.to_string();
-}
-
-#[get("/electrode/f/<n>")]
-fn felectrode(r: State<Record>, n: usize) -> String {
-    let el = r.efilter(n);
-    let j = json!(el);
-    return j.to_string();
-}
-
-#[get("/electrode/f/<n>/timeslice/<s>")]
-fn ftimeslice(r: State<Record>, n: usize, s: u64) -> String {
-    let el = r.timeslice("f", s, n);
-    let j = json!(el);
-    return j.to_string();
-}
-
-#[get("/electrode/s/<n>")]
-fn selectrode(r: State<Record>, n: usize) -> String {
-    let el = r.espiker(n);
-    let j = json!(el);
-    return j.to_string();
-}
-
-#[get("/electrode/s/<n>/timeslice/<s>")]
-fn stimeslice(r: State<Record>, n: usize, s: u64) -> String {
-    let el = r.timeslice("s", s, n);
+#[get("/electrode/<m>/<n>/timeslice/<s>")]
+fn timeslice(r: State<Record>, m: String, n: usize, s: u64) -> String {
+    let el = r.timeslice(m.as_str(), s, n);
     let j = json!(el);
     return j.to_string();
 }
@@ -122,6 +103,6 @@ fn main() {
             }
             return ();
         }))
-        .mount("/", routes![index,favicon,js,config,electrode,felectrode,selectrode,samplerate,duration,timeslice,ftimeslice,stimeslice,stimstart])
+        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,stimstart])
         .launch();
 }
