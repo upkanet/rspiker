@@ -15,12 +15,12 @@ use wfd::{DialogParams};
 mod record;
 use record::Record;
 
-static mut r: Record = Record::empty();
+static mut R: Record = Record::empty();
 
 #[get("/electrode/<m>/<n>")]
 fn electrode(m: String, n: usize) -> String {
     unsafe{
-        let el = r.full(m.as_str(), n);
+        let el = R.full(m.as_str(), n);
         let j = json!(el);
         return j.to_string();
     }
@@ -29,7 +29,7 @@ fn electrode(m: String, n: usize) -> String {
 #[get("/electrode/<m>/<n>/timeslice/<s>")]
 fn timeslice(m: String, n: usize, s: u64) -> String {
     unsafe{
-        let el = r.timeslice(m.as_str(), s, n);
+        let el = R.timeslice(m.as_str(), s, n);
         let j = json!(el);
         return j.to_string();
     }
@@ -37,29 +37,23 @@ fn timeslice(m: String, n: usize, s: u64) -> String {
 
 #[get("/samplerate")]
 fn samplerate() -> String {
-    let mut sr = String::new();
     unsafe{
-        sr = r.fileparam.sample_rate.to_string();
+        return R.fileparam.sample_rate.to_string();
     }
-    return sr;
 }
 
 #[get("/duration")]
 fn duration() -> String {
-    let mut d = String::new();
     unsafe {
-        d = r.duration.to_string();
+        return R.duration.to_string();
     }
-    return d;
 }
 
 #[get("/stimstart/<n>")]
 fn stimstart(n: usize) -> String {
-    let mut ss = String::new();
     unsafe{
-        ss = r.stimstart(n).to_string();
+        return R.stimstart(n).to_string();
     }
-    return ss;
 }
 
 
@@ -101,9 +95,9 @@ fn main() {
     println!("RSpiker launch on {}", fpath);
     let now = Instant::now();
     unsafe {
-        r = Record::new(fpath.to_string());
+        R = Record::new(fpath.to_string());
         println!("Loading Data...");
-        r.load();
+        R.load();
         println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     }
     rocket::ignite()
