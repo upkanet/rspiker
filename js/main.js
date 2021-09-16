@@ -100,7 +100,10 @@ function updateSlider(){
     $.getJSON("\config", function(config){
         $.getJSON("\duration", (duration) => {
             var s = Math.floor(duration / config.timewidth);
-            $("#slider").attr('max',s);
+            var sl = $("#slider");
+            sl.attr('max',s);
+            var pos = Number(sl.val()*config.timewidth).toFixed(1);
+            $('#time').val(`${pos} sec`);
             refresh();
         });
     });
@@ -182,14 +185,17 @@ function populateHeatmap(){
     var config = getConfig();
     $('#microslider').attr("max",config.timewidth * config.samplerate);
     $('#heatmap-ms').attr('data-samplerate',config.samplerate);
+    $('#heatmap-ms').attr('data-stimstart',config.stimstart);
+    $('#heatmap-ms').attr('data-timewidth',config.timewidth);
     setMicroSlider();
     loadHM();
 }
 
 function loadHM(){
+    dataloaderinit(256);
     var s = $("#slider").val();
     for(var i = 1; i <= 256;i++){
-        $.ajax({
+        var f = $.ajax({
             dataType: 'json',
             type: 'get',
             url: `/electrode/hm/${i-1}/timeslice/${s}`,
@@ -198,8 +204,10 @@ function loadHM(){
             }
         }).done((data, textStatus, jqXHR)=>{
             heatmap[jqXHR.electrode-1] = data;
+            dataloader();
             showHM();
         });
+        abordable.push(f);
     }
 }
 
@@ -212,8 +220,11 @@ function updateMS(){
     var hmms = $('#heatmap-ms');
     var ms = $('#microslider').val();
     var samplerate = hmms.data('samplerate');
-    var sec = ms/samplerate;
-    hmms.val(Math.round(sec*1000*100)/100+" ms");
+    var stimstart = hmms.data('stimstart');
+    var timewidth = hmms.data('timewidth');
+    var millisec = Number(ms/samplerate*1000).toFixed(2);
+    var away = Number((ms/samplerate-stimstart % timewidth)*1000).toFixed(2);
+    hmms.val(`+${millisec} ms (${(away<0?"":"+") + away})`);
 }
 
 function setMicroSlider(){
