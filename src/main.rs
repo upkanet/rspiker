@@ -35,6 +35,15 @@ fn timeslice(m: String, n: usize, s: u64) -> String {
     }
 }
 
+#[get("/clearcache/<m>")]
+fn clearcache(m: String) -> String {
+    unsafe{
+        R.clearcache(m.as_str());
+        let j = json!(m+":false");
+        return j.to_string();
+    }
+}
+
 #[get("/samplerate")]
 fn samplerate() -> String {
     unsafe{
@@ -107,6 +116,6 @@ fn main() {
             }
             return ();
         }))
-        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,stimstart])
+        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,clearcache,stimstart])
         .launch();
 }

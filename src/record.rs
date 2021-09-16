@@ -245,11 +245,13 @@ impl Electrode {
         if !self.status.filtered {
             self.filter()
         }
+        let avg = self.avg();
+        let stddev = self.stddev();
 
         let mut hme = vec![0.0;self.filtered.len()];
 
         for k in 0..hme.len() {
-            let v = (self.filtered[k] - self.avg()) / self.stddev();
+            let v = (self.filtered[k] - avg) / stddev;
             hme[k] = v.round();
         }
 
@@ -401,6 +403,21 @@ impl Record {
             }
         }
         return stimstart as f64 / self.fileparam.sample_rate as f64;
+    }
+
+    pub fn clearcache(&mut self,m: &str){
+        unsafe {
+            CONFIG = Config::get();
+        }
+        if m == "f" {
+            self.electrodes.iter_mut().for_each(|e| e.status.filtered = false);
+        }
+        else if m == "s" {
+            self.electrodes.iter_mut().for_each(|e| e.status.spikesorted = false);
+        }
+        else if m == "hm" {
+            self.electrodes.iter_mut().for_each(|e| e.status.heatmapped = false);
+        }
     }
 }
 
