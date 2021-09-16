@@ -1,6 +1,7 @@
 //Init
 $(init);
 function init(){
+    loadConfig();
     initGrid();
     updateSlider();
 }
@@ -184,9 +185,6 @@ var heatmap = Array(256);
 function populateHeatmap(){
     var config = getConfig();
     $('#microslider').attr("max",config.timewidth * config.samplerate);
-    $('#heatmap-ms').attr('data-samplerate',config.samplerate);
-    $('#heatmap-ms').attr('data-stimstart',config.stimstart);
-    $('#heatmap-ms').attr('data-timewidth',config.timewidth);
     setMicroSlider();
     loadHM();
 }
@@ -219,9 +217,10 @@ function updateMicroSlider(){
 function updateMS(){
     var hmms = $('#heatmap-ms');
     var ms = $('#microslider').val();
-    var samplerate = hmms.data('samplerate');
-    var stimstart = hmms.data('stimstart');
-    var timewidth = hmms.data('timewidth');
+    var config = getConfig();
+    var samplerate = config.samplerate;
+    var stimstart = config.stimstart;
+    var timewidth = config.timewidth;
     var millisec = Number(ms/samplerate*1000).toFixed(2);
     var away = Number((ms/samplerate-stimstart % timewidth)*1000).toFixed(2);
     hmms.val(`+${millisec} ms (${(away<0?"":"+") + away})`);
@@ -393,8 +392,8 @@ function plotEstack(){
     var timewidth = config.timewidth;
     var electrode = $("#g-raster-el").data('e');
     var step = $('#stack-width').val();
+    var sample_rate = config.samplerate;
     var f = $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
-        var sample_rate = 20000;
         var tw = timewidth;
 
         var histo = new Array(Math.round(timewidth / step)+1).fill(0);
@@ -444,7 +443,7 @@ function getSampleRate(){
     return Number(samplerate);
 }
 
-function getStimstart(){
+function getStimStart(){
     var electrode = 127;
     $.ajax({
         url: `/stimstart/${electrode-1}`,
@@ -455,16 +454,38 @@ function getStimstart(){
     return Number(stimstart);
 }
 
-function getConfig(){
-    var config = 0;
+function loadConfig(){
     $.ajax({
+        dataType: 'json',
         url: '/config',
         async: false
-    }).done(function(data){
-        config = data;
+    }).done((data) => {
+        $('#filterfc').val(data.fc);
+        $('#threshold').val(data.threshold);
+        $('#timewidth').val(data.timewidth);
+        $('#stimduration').val(data.stimduration);
+        $('#map_mea').val(data.map_mea);
     });
-    config.stimstart = getStimstart();
-    config.samplerate = getSampleRate();
+    $('#samplerate').val(getSampleRate());
+    $('#stimstart').val(getStimStart());
+}
+
+function getConfig(){
+    var config = {};
+    config.fc = $('#filterfc').val();
+    config.threshold = $('#threshold').val();
+    config.timewidth = $('#timewidth').val();
+    config.stimduration = $('#stimduration').val();
+    config.map_mea = $('#map_mea').val().split(",");
+    config.samplerate = $('#samplerate').val();
+    config.stimstart = $('#stimstart').val();
     return config;
+}
+
+function saveConfig(){
+    var config = getConfig();
+    config.samplerate = null;
+    config.stimstart = null;
+    console.log(config);
 }
 
