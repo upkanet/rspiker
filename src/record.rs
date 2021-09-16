@@ -141,6 +141,47 @@ impl Electrode {
         return Electrode{sample_rate, raw,filtered,spikesorted,heatmapped, status};
     }
 
+    fn threshold(&self) -> f64{
+        let mut factor = 0.0;
+        let mut threshold = 0.0;
+        unsafe{
+            factor = CONFIG.threshold;
+        }
+        if factor == 0.0 {
+            threshold = 500.0 * self.median() / 0.6745;
+        }
+        else{
+            threshold = factor * self.stddev();
+        }
+        return threshold.abs();
+    }
+
+    fn stddev(&self) -> f64 {
+        let avg = self.avg();
+        let mut sum = 0.0;
+        let n = self.filtered.len();
+        for i in 0..n {
+            let v = self.filtered[i];
+            let diff = v - avg;
+            sum = sum + diff * diff;
+        }
+        let stddev = (sum/(n as f64)).sqrt();
+        return stddev;
+    }
+
+    fn avg(&self) -> f64{
+        let sum:f64 = self.filtered.iter().sum();
+        let avg = sum / (self.filtered.len() as f64);
+        return avg;
+    }
+
+    fn median(&self) -> f64 {
+        let mut sdata = self.filtered.to_vec();
+        sdata.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mid = sdata.len() / 2;
+        return sdata[mid];
+    }
+
     pub fn filter(&mut self) {
         let mut fc = 0;
         unsafe{
@@ -166,24 +207,13 @@ impl Electrode {
     }
 
     pub fn spikesort(&mut self){
-        let mut threshold = 0.0;
-        unsafe{
-            threshold = CONFIG.threshold;
-        }
         if !self.status.filtered {
             self.filter();
         }
+        let threshold = self.threshold();
         let fe = self.filtered.to_vec();
-        let avg = match mean(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-        let stddev = match std_deviation(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-
         let mut se = fe.to_vec();
+        let avg = self.avg();
 
         se[0] = 0.0;
 
@@ -191,8 +221,8 @@ impl Electrode {
             // Y m-1
             let ym1 = fe[k-1];
             let y = fe[k];
-            let tup = avg + threshold * stddev;
-            let tdown = avg - threshold * stddev;
+            let tup = avg + threshold;
+            let tdown = avg - threshold;
 
             // Asc front
             if (ym1 <= tup) && (y > tup){
@@ -215,20 +245,11 @@ impl Electrode {
         if !self.status.filtered {
             self.filter()
         }
-        let fe = self.filtered.to_vec();
-        let avg = match mean(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
-        let stddev = match std_deviation(&fe){
-            Some(v) => v,
-            None => 0.0
-        };
 
-        let mut hme = fe.to_vec();
+        let mut hme = vec![0.0;self.filtered.len()];
 
         for k in 0..hme.len() {
-            let v = (fe[k] - avg) / stddev;
+            let v = (self.filtered[k] - self.avg()) / self.stddev();
             hme[k] = v.round();
         }
 
@@ -380,31 +401,6 @@ impl Record {
             }
         }
         return stimstart as f64 / self.fileparam.sample_rate as f64;
-    }
-}
-
-fn mean(data: &[f64]) -> Option<f64> {
-    let sum = data.iter().sum::<f64>() as f64;
-    let count = data.len();
-
-    match count {
-        positive if positive > 0 => Some(sum / count as f64),
-        _ => None,
-    }
-}
-
-fn std_deviation(data: &[f64]) -> Option<f64> {
-    match (mean(data), data.len()) {
-        (Some(data_mean), count) if count > 0 => {
-            let variance = data.iter().map(|value| {
-                let diff = data_mean - (*value as f64);
-
-                diff * diff
-            }).sum::<f64>() / count as f64;
-
-            Some(variance.sqrt())
-        },
-        _ => None
     }
 }
 
