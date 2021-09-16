@@ -2,11 +2,10 @@
 
 #[macro_use] extern crate rocket;
 
-use rocket::response::NamedFile;
-use rocket::response::status::NotFound;
+use rocket::fs::NamedFile;
+use rocket::serde::json::{json,Json};
+use rocket::fairing::AdHoc;
 use std::path::Path;
-
-use serde_json::json;
 
 use std::time::Instant;
 
@@ -44,6 +43,12 @@ fn clearcache(m: String) -> String {
     }
 }
 
+#[post("/clearcache/<m>")]
+fn saveconfig(m: String,) -> String {
+    return String::from("Toto");
+}
+
+
 #[get("/samplerate")]
 fn samplerate() -> String {
     unsafe{
@@ -65,33 +70,32 @@ fn stimstart(n: usize) -> String {
     }
 }
 
-
 #[get("/js/<f>")]
-fn js(f: String) -> Result<NamedFile, NotFound<String>> {
+async fn js(f: String) -> Option<NamedFile> {
     let path = Path::new("js/").join(f);
     println!("{:?}",path);
-    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+    NamedFile::open(&path).await.ok()
 }
 
 #[get("/config")]
-fn config() -> Result<NamedFile, NotFound<String>> {
+async fn config() -> Option<NamedFile> {
     let path = Path::new("config.json");
-    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+    NamedFile::open(&path).await.ok()
 }
 
 #[get("/favicon.ico")]
-fn favicon() -> Result<NamedFile, NotFound<String>> {
+async fn favicon() -> Option<NamedFile> {
     let path = Path::new("public/favicon.ico");
-    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+    NamedFile::open(&path).await.ok()
 }
 
 #[get("/")]
-fn index() -> Result<NamedFile, NotFound<String>> {
+async fn index() -> Option<NamedFile> {
     let path = Path::new("public/index.htm");
-    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+    NamedFile::open(&path).await.ok()
 }
 
-fn main() {
+fn prepare() {
     let params = DialogParams {
         title: "Axorus Rspiker - Select a .raw file",
         file_types: vec![("MCD raw", "*.raw")],
@@ -109,13 +113,19 @@ fn main() {
         R.load();
         println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     }
-    rocket::ignite()
-        .attach(rocket::fairing::AdHoc::on_launch("Open Browser", |_x| {
-            if webbrowser::open("http://localhost:8000/").is_ok() {
-                println!("Open web browser");
-            }
-            return ();
+}
+
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error>{
+    rocket::build()
+        .attach(AdHoc::on_ignite("Pepare data", |rocket| async move {
+            prepare();
+            rocket
         }))
+        .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
+            webbrowser::open("http://localhost:8000/").unwrap();
+        })))
         .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,clearcache,stimstart])
-        .launch();
+        .launch()
+        .await
 }

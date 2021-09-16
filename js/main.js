@@ -454,20 +454,29 @@ function getStimStart(){
     return Number(stimstart);
 }
 
-function loadConfig(){
+function fromServerConfig(){
+    var config = {};
     $.ajax({
         dataType: 'json',
         url: '/config',
         async: false
     }).done((data) => {
-        $('#filterfc').val(data.fc);
-        $('#threshold').val(data.threshold);
-        $('#timewidth').val(data.timewidth);
-        $('#stimduration').val(data.stimduration);
-        $('#map_mea').val(data.map_mea);
+        config = data;
     });
-    $('#samplerate').val(getSampleRate());
-    $('#stimstart').val(getStimStart());
+    config.samplerate = getSampleRate();
+    config.stimstart =  getStimStart();
+    return config;
+}
+
+function loadConfig(){
+    var config = fromServerConfig();
+    $('#filterfc').val(config.fc);
+    $('#threshold').val(config.threshold);
+    $('#timewidth').val(config.timewidth);
+    $('#stimduration').val(config.stimduration);
+    $('#map_mea').val(config.map_mea);
+    $('#samplerate').val(config.samplerate);
+    $('#stimstart').val(config.stimstart);
 }
 
 function getConfig(){
@@ -484,8 +493,24 @@ function getConfig(){
 
 function saveConfig(){
     var config = getConfig();
-    config.samplerate = null;
-    config.stimstart = null;
+    var oldconfig = fromServerConfig();
+    delete config.samplerate;
+    delete config.stimstart;
+    if(config.fc != oldconfig.fc){
+        clearCache("f");
+        clearCache("s");
+        clearCache("hm");
+    }
+    if(config.threshold != oldconfig.threshold){
+        clearCache("s");
+    }
     console.log(config);
+}
+
+function clearCache(mod){
+    console.log("Clear Cache for",mod);
+    $.getJSON(`/clearcach/${mod}`,(d) => {
+        console.log(d);
+    });
 }
 
