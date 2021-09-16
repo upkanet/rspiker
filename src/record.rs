@@ -10,16 +10,17 @@ use std::io::SeekFrom;
 
 use serde::Deserialize;
 
-#[derive(Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     pub fc: u64,
     pub threshold: f64,
-    pub timewidth: u64
+    pub timewidth: u64,
+    pub stimduration: u64
 }
 
 impl Config {
     pub const fn new() -> Config{
-        return Config{fc: 0, threshold: 0.0, timewidth: 0};
+        return Config{fc: 0, threshold: 0.0, timewidth: 0, stimduration: 0};
     }
 
     pub fn get() -> Config{
@@ -417,6 +418,12 @@ impl Record {
         }
         else if m == "hm" {
             self.electrodes.iter_mut().for_each(|e| e.status.heatmapped = false);
+        }
+    }
+
+    pub fn saveconfig(&self, c: Config){
+        unsafe{
+            CONFIG = c;
         }
     }
 }

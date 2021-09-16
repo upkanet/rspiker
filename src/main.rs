@@ -12,7 +12,7 @@ use std::time::Instant;
 use wfd::{DialogParams};
 
 mod record;
-use record::Record;
+use record::{Record,Config};
 
 static mut R: Record = Record::empty();
 
@@ -43,9 +43,12 @@ fn clearcache(m: String) -> String {
     }
 }
 
-#[post("/clearcache/<m>")]
-fn saveconfig(m: String,) -> String {
-    return String::from("Toto");
+#[post("/saveconfig", format = "json", data = "<user_config>")]
+fn saveconfig(user_config: Json<Config>) -> String {
+    unsafe{
+        R.saveconfig(user_config.into_inner());
+    }
+    return json!("").to_string();
 }
 
 
@@ -125,7 +128,7 @@ async fn main() -> Result<(), rocket::Error>{
         .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
             webbrowser::open("http://localhost:8000/").unwrap();
         })))
-        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,clearcache,stimstart])
+        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,clearcache,stimstart,saveconfig])
         .launch()
         .await
 }

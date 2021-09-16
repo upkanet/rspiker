@@ -481,10 +481,10 @@ function loadConfig(){
 
 function getConfig(){
     var config = {};
-    config.fc = $('#filterfc').val();
-    config.threshold = $('#threshold').val();
-    config.timewidth = $('#timewidth').val();
-    config.stimduration = $('#stimduration').val();
+    config.fc = Number($('#filterfc').val());
+    config.threshold = Number($('#threshold').val());
+    config.timewidth = Number($('#timewidth').val());
+    config.stimduration = Number($('#stimduration').val());
     config.map_mea = $('#map_mea').val().split(",");
     config.samplerate = $('#samplerate').val();
     config.stimstart = $('#stimstart').val();
@@ -494,6 +494,7 @@ function getConfig(){
 function saveConfig(){
     var config = getConfig();
     var oldconfig = fromServerConfig();
+    delete config.map_mea;
     delete config.samplerate;
     delete config.stimstart;
     if(config.fc != oldconfig.fc){
@@ -505,11 +506,21 @@ function saveConfig(){
         clearCache("s");
     }
     console.log(config);
+    $.ajax({
+        method: "POST",
+        url: `/saveconfig`,
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(config),
+        dataType:"json",
+        success: (d) => {
+            console.log(d);
+        }
+      });
 }
 
 function clearCache(mod){
     console.log("Clear Cache for",mod);
-    $.getJSON(`/clearcach/${mod}`,(d) => {
+    $.getJSON(`/clearcache/${mod}`,(d) => {
         console.log(d);
     });
 }
