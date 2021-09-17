@@ -231,7 +231,7 @@ impl Electrode {
             }
             // Desc front
             else if (ym1 >= tdown) && (y < tdown){
-                se[k] = 1.0;
+                se[k] = -1.0;
             }
             else{
                 se[k] = 0.0;
