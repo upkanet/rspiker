@@ -259,6 +259,39 @@ impl Electrode {
         self.heatmapped = hme;
         self.status.heatmapped = true;
     }
+
+    pub fn slice(&mut self, m: &str, k: usize, k1: usize) -> Vec<f64> {
+        let mut e: Vec<f64> = Vec::new();
+        let mut k2: usize = 0;
+        if k1 > self.raw.len() {
+            k2 = self.raw.len();
+        }
+        else{
+            k2 = k1;
+        }
+        if m == "e"{
+            e = self.raw[k..k2].to_vec();
+        }
+        else if m == "f" {
+            if !self.status.filtered {
+                self.filter()
+            }
+            e = self.filtered[k..k2].to_vec();
+        }
+        else if m == "s" {
+            if !self.status.spikesorted {
+                self.spikesort();
+            }
+            e = self.spikesorted[k..k2].to_vec();
+        }
+        else if m == "hm" {
+            if !self.status.heatmapped {
+                self.heatmap();
+            }
+            e = self.heatmapped[k..k2].to_vec();
+        }
+        return e;
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -358,40 +391,14 @@ impl Record {
         return el;
     }
 
-    pub fn timeslice(&self,m: &str, s: u64, n: usize) -> Vec<f64>{
+    pub fn timeslice(&mut self,m: &str, s: u64, n: usize) -> Vec<f64>{
         let mut timewidth = 0;
         unsafe {
             timewidth = CONFIG.timewidth;
         }
         let k = (s * timewidth * self.fileparam.sample_rate) as usize;
-        let mut k2 = ((s + 1) * timewidth * self.fileparam.sample_rate) as usize;
-        let mut el:Electrode = self.electrodes[n].clone();
-        let mut el2: Vec<f64> = Vec::new();
-        if m == "e"{
-            el2 = el.raw.to_vec();
-        }
-        else if m == "f" {
-            if !el.status.filtered {
-                el.filter()
-            }
-            el2 = el.filtered.to_vec();
-        }
-        else if m == "s" {
-            if !el.status.spikesorted {
-                el.spikesort();
-            }
-            el2 = el.spikesorted.to_vec();
-        }
-        else if m == "hm" {
-            if !el.status.heatmapped {
-                el.heatmap();
-            }
-            el2 = el.heatmapped.to_vec();
-        }
-        if k2 > el2.len(){
-            k2 = el2.len();
-        }
-        return el2[k..k2].to_vec();
+        let k1 = ((s + 1) * timewidth * self.fileparam.sample_rate) as usize;
+        return self.electrodes[n].slice(m,k,k1);
     }
 
     pub fn stimstart(&self, n:usize) -> f64 {
