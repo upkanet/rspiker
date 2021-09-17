@@ -10,6 +10,8 @@ use std::io::SeekFrom;
 
 use serde::Deserialize;
 
+use realfft::{RealFftPlanner,num_complex::Complex};
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     pub fc: u64,
@@ -290,7 +292,28 @@ impl Electrode {
             }
             e = self.heatmapped[k..k2].to_vec();
         }
+        else if m == "sp" {
+            e = self.spectrum(k, k1);
+        }
         return e;
+    }
+
+    pub fn spectrum(&mut self, k: usize, k1: usize) -> Vec<f64>{
+        let mut e = self.slice("e",k,k1);
+
+        let mut rp = RealFftPlanner::<f64>::new();
+        let fft = rp.plan_fft_forward(e.len());
+
+        let mut spectrum = fft.make_output_vec();
+        fft.process(&mut e, &mut spectrum).unwrap();
+
+        let mut r: Vec<f64> = Vec::new();
+
+        for i in 0..spectrum.len() {
+            r.push(spectrum[i].norm());
+        }
+
+        return r;
     }
 }
 

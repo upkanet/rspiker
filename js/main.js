@@ -387,6 +387,33 @@ function plotColor(x,start,end){
     return col;
 }
 
+function plotEspectrum(){
+    var electrode = $("#g-raw-el").data('e');
+    var s = $("#slider").val();
+    var d = $(`#g-spectrum-el`);
+    var w = d.width();
+    var h = d.height();
+    d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+    var canvas = $(`#g-spectrum-el>canvas`)[0];
+    var ctx = canvas.getContext('2d');
+    var f = $.getJSON(`/electrode/sp/${electrode-1}/timeslice/${s}`, (data) => {
+        var aw = data.length;
+        var atop = Math.max(...data);
+        var abot = Math.min(...data);
+        var ah = atop - abot;
+
+        ctx.clearRect(0,0,w,h);
+
+        data.forEach((v,k) => {
+            var x = k / aw;
+            var y = (v - abot) / ah;
+            ctx.fillStyle="#1f77b4";
+            ctx.fillRect(x * w,h*(1-y),1,1);
+        });
+
+    });
+}
+
 function plotEstack(){
     var config = getConfig();
     var timewidth = config.timewidth;
