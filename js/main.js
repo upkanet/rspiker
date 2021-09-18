@@ -301,12 +301,17 @@ function plotEdata(graph,mod,electrode,config){
         var canvas = $(`#${graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
 
+        ctx.beginPath();
+        ctx.moveTo(0,h);
+
         data.forEach((v,k) => {
             var x = k / aw;
             var y = (v - abot) / ah;
-            ctx.fillStyle=plotColor(x,stimstartpos,stimendpos);
-            ctx.fillRect(x * w,y * h,1,1);
+            ctx.lineTo(x * w,h*(1-y));
         });
+        ctx.strokeStyle="#1f77b4";
+        ctx.stroke();
+
         dataloader();
         plotSpikes(graph, electrode);
     });
@@ -404,12 +409,17 @@ function plotEspectrum(){
 
         ctx.clearRect(0,0,w,h);
 
+        ctx.beginPath();
+        ctx.moveTo(0,h);
+
         data.forEach((v,k) => {
             var x = k / aw;
             var y = (v - abot) / ah;
-            ctx.fillStyle="#1f77b4";
-            ctx.fillRect(x * w,h*(1-y),1,1);
+            ctx.lineTo(x *w, h*(1-y));
         });
+        ctx.strokeStyle="#1f77b4";
+        ctx.closePath();
+        ctx.stroke();
 
     });
 }
