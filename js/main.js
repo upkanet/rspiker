@@ -429,7 +429,7 @@ function plotEspectrum(){
     var d = $(`#g-spectrum-el`);
     var w = d.width();
     var h = d.height();
-    d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+    d.html(`<canvas width="${w}" height="${h}"></canvas>`);
     var canvas = $(`#g-spectrum-el>canvas`)[0];
     var ctx = canvas.getContext('2d');
     var f = $.getJSON(`/electrode/sp/${electrode-1}/timeslice/${s}`, (data) => {
