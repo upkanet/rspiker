@@ -65,6 +65,16 @@
         height: 200px;
     }
 
+    .graph-el{
+        width: calc(100% - 10px);
+        height: calc(100% - 150px);
+        margin-left:5px;
+    }
+
+    .graph-el-detail{
+        display:none;
+    }
+
     .test{
         border: 1px solid red;
         height: 50px;
@@ -121,7 +131,7 @@
     </div>
     <div class="tab" id="raw"></div>
     <div class="tab" id="raw_el">
-        <div id="g-raw-el" style="width:100%;height:calc(100% - 150px);" onclick="show('raw')"></div>
+        <div id="g-raw-el" class="graph-el" onclick="show('raw')"></div>
         <div class="container">
             <div class="row  justify-content-md-center">
                 <div class="col col-lg-2">
@@ -129,22 +139,22 @@
                 </div>
             </div>
         </div>
-        <div id="g-spectrum-el" style="width:100%;height:calc(100% - 150px);"></div>
+        <div id="g-spectrum-el" class="graph-el graph-el-detail"></div>
     </div>
     <div class="tab" id="filtered"></div>
     <div class="tab" id="filtered_el">
-        <div id="g-filtered-el" style="width:100%;height:calc(100% - 150px);" onclick="show('filtered')"></div>
+        <div id="g-filtered-el" class="graph-el" onclick="show('filtered')"></div>
     </div>
     <div class="tab" id="raster"></div>
     <div class="tab" id="raster_el">
         <div class="container">
-            <div id="g-raster-el" style="width:100%;height:calc(100% - 200px);" onclick="show('raster')"></div>
+            <div id="g-raster-el" class="graph-el" onclick="show('raster')"></div>
             <div class="input-group mb-3">
                 <input type="number" class ="form-control form-control-lg" id="stack-width" value="0.01" min="0" max="1" step="0.005">
                 <button type="button" class="btn btn-lg btn-outline-primary">seconds</button>
                 <button type="button" class="btn btn-lg btn-primary" onclick="plotEstack()">Stack</button>
             </div>
-            <div id="g-stack-el" style="width:100%;height:calc(100% - 200px); display:none;" onclick="$(this).hide()"></div>
+            <div id="g-stack-el" class="graph-el graph-el-detail"></div>
         </div>
     </div>
     <div class="tab" id="heatmap">

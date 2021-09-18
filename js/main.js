@@ -4,6 +4,9 @@ function init(){
     loadConfig();
     initGrid();
     updateSlider();
+    $(".graph-el-detail").click(function(){
+        $(this).hide();
+    })
 }
 
 var abordable = [];
@@ -305,6 +308,7 @@ function plotEdata(graph,mod,electrode,config){
         ctx.fillStyle="red";
         ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
 
+        //Data
         ctx.beginPath();
         ctx.moveTo(0,h*(1-(data[0] - abot) / ah));
 
@@ -315,6 +319,26 @@ function plotEdata(graph,mod,electrode,config){
         });
         ctx.strokeStyle="#1f77b4";
         ctx.stroke();
+
+        //Abscisse
+        var isel = (graph.substr(-2) == "el");
+        if(isel){
+            ctx.beginPath();
+            ctx.moveTo(0,h/2);
+            ctx.lineTo(w,h/2);
+            ctx.strokeStyle="white";
+            ctx.stroke();
+            ctx.fillStyle="white";
+            ctx.fillRect(0,h/2-10,1,20);
+            ctx.fillRect(w/2,h/2-10,1,20);
+            ctx.fillRect(w-1,h/2-10,1,20);
+            ctx.font = "12px Arial";
+            s = Number(s);
+            ctx.fillText("seconds",0,h/2+25);
+            ctx.fillText(s*timewidth,0,h/2-20);
+            ctx.fillText((s+0.5)*timewidth,w/2-4,h/2-20);
+            ctx.fillText((s+1)*timewidth,w-10,h/2-20);
+        }
 
         dataloader();
         plotSpikes(graph, electrode);
@@ -425,9 +449,10 @@ function plotEspectrum(){
             ctx.lineTo(x *w, h*(1-y));
         });
         ctx.strokeStyle="#1f77b4";
-        ctx.closePath();
         ctx.stroke();
 
+        $("#g-spectrum-el").show();
+        document.getElementById("g-spectrum-el").scrollIntoView(true);
     });
 }
 
