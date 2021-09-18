@@ -95,12 +95,16 @@
     </ul>
     <div class="container">
         <div class="row">
-            <div class="col-10">
+            <div class="col-9">
                 <input id="slider" type="range" class="form-range" min="0" max="5" value="0" onchange="updateSlider()">
             </div>
-            <div class="col-2">
+            <div class="col-3">
                 <div class="input-group">
                     <input id="time" type="text" class="form-control form-control-sm" value="0.0 sec" disabled>
+                    <div class="input-group-text">
+                        Spikes&nbsp;
+                        <input id="spike-layer" class="form-check-input mt-0" type="checkbox" value="">
+                    </div>
                     <button type="button" class="btn btn-primary" onclick="select_el();">Electrode #</button>
                 </div>
             </div>

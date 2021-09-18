@@ -359,6 +359,9 @@ function plotERaster(graph,electrode,config){
 }
 
 function plotSpikes(graph, electrode){
+    if(!$('#spike-layer').is(':checked')){
+        return 1;
+    }
     var s = $("#slider").val();
     var f = $.getJSON(`/electrode/s/${electrode-1}/timeslice/${s}`, (data) => {
         var d = $(`#${graph}`);
