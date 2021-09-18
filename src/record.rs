@@ -315,6 +315,19 @@ impl Electrode {
 
         return r;
     }
+
+    pub fn topfreq(&mut self, k: usize, k1:usize) -> u64 {
+        let s = self.spectrum(k,k1);
+        let mut max = 0.0;
+        let mut imax:u64 = 0;
+        for i in 0..s.len() {
+            if s[i] > max {
+                max = s[i];
+                imax = i as u64;
+            }
+        }
+        return imax;
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -415,13 +428,13 @@ impl Record {
     }
 
     pub fn timeslice(&mut self,m: &str, s: u64, n: usize) -> Vec<f64>{
-        let mut timewidth = 0;
-        unsafe {
-            timewidth = CONFIG.timewidth;
-        }
-        let k = (s * timewidth * self.fileparam.sample_rate) as usize;
-        let k1 = ((s + 1) * timewidth * self.fileparam.sample_rate) as usize;
+        let (k,k1) = self.stok(s);
         return self.electrodes[n].slice(m,k,k1);
+    }
+
+    pub fn topfreq(&mut self, s: u64, n: usize) -> u64{
+        let (k,k1) = self.stok(s);
+        return self.electrodes[n].topfreq(k, k1);
     }
 
     pub fn stimstart(&self, n:usize) -> f64 {
@@ -455,6 +468,16 @@ impl Record {
         unsafe{
             CONFIG = c;
         }
+    }
+    
+    pub fn stok(&self, s: u64) -> (usize,usize){
+        let mut timewidth = 0;
+        unsafe {
+            timewidth = CONFIG.timewidth;
+        }
+        let k = (s * timewidth * self.fileparam.sample_rate) as usize;
+        let k1 = ((s + 1) * timewidth * self.fileparam.sample_rate) as usize;
+        return (k,k1);
     }
 }
 

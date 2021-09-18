@@ -34,6 +34,15 @@ fn timeslice(m: String, n: usize, s: u64) -> String {
     }
 }
 
+#[get("/topfreq/<n>/timeslice/<s>")]
+fn topfreq(n: usize, s: u64) -> String {
+    unsafe{
+        let tf = R.topfreq(s,n);
+        let j = json!(tf);
+        return j.to_string();
+    }
+}
+
 #[get("/clearcache/<m>")]
 fn clearcache(m: String) -> String {
     unsafe{
@@ -128,7 +137,7 @@ async fn main() -> Result<(), rocket::Error>{
         .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
             webbrowser::open("http://localhost:8000/").unwrap();
         })))
-        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,clearcache,stimstart,saveconfig])
+        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,topfreq,clearcache,stimstart,saveconfig])
         .launch()
         .await
 }
