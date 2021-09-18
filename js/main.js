@@ -336,8 +336,10 @@ function plotEdata(graph,mod,electrode,config){
             s = Number(s);
             ctx.fillText("seconds",0,h/2+25);
             ctx.fillText(s*timewidth,0,h/2-20);
-            ctx.fillText((s+0.5)*timewidth,w/2-4,h/2-20);
-            ctx.fillText((s+1)*timewidth,w-10,h/2-20);
+            ctx.textAlign = 'center';
+            ctx.fillText((s+0.5)*timewidth,w/2,h/2-20);
+            ctx.textAlign = 'right';
+            ctx.fillText((s+1)*timewidth,w,h/2-20);
         }
 
         dataloader();
