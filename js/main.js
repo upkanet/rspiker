@@ -301,8 +301,12 @@ function plotEdata(graph,mod,electrode,config){
         var canvas = $(`#${graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
 
+        //Stim Square
+        ctx.fillStyle="red";
+        ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
+
         ctx.beginPath();
-        ctx.moveTo(0,h);
+        ctx.moveTo(0,h*(1-(data[0] - abot) / ah));
 
         data.forEach((v,k) => {
             var x = k / aw;
