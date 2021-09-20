@@ -502,6 +502,14 @@ function plotEspectrum(xp,wp){
     });
 }
 
+function playSpectrum(){
+    var wp = $('#spectrum-cursor-width').val()/100;
+    for(var i = 0;i<=100;i++){
+        var xp = Number(i/100);
+        setTimeout((a,b)=>{  plotEspectrum(a,b); }, i*50, xp, wp);
+    }
+}
+
 Array.prototype.topIndex = function(nb){
     var r = [];
     var sp2 = this.slice();
