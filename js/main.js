@@ -372,8 +372,7 @@ function cursorCanvas(){
         e.preventDefault();
         var xp = e.clientX / canvas.width;
         var wp = $('#spectrum-cursor-width').val()/100;
-        console.log(xp,wp);
-        plotEspectrum();
+        plotEspectrum(xp,wp);
         return false;
     }, false);
 }
@@ -455,16 +454,19 @@ function plotColor(x,start,end){
     return col;
 }
 
-function plotEspectrum(){
+function plotEspectrum(xp,wp){
     var electrode = $("#g-raw-el").data('e');
-    var s = $("#slider").val();
+    var s = Number($("#slider").val());
+    var config = getConfig();
+    var k = Math.floor((s+xp) * Number(config.samplerate));
+    var k1 = Math.floor(Math.min(s+1,s+xp+wp) * Number(config.samplerate));
     var d = $(`#g-spectrum-el`);
     var w = d.width();
     var h = d.height();
     d.html(`<canvas width="${w}" height="${h}"></canvas>`);
     var canvas = $(`#g-spectrum-el>canvas`)[0];
     var ctx = canvas.getContext('2d');
-    var f = $.getJSON(`/electrode/sp/${electrode-1}/timeslice/${s}`, (data) => {
+    var f = $.getJSON(`/spectrum/${electrode-1}/slice/${k}/${k1}`, (data) => {
         var aw = data.length;
         var atop = Math.max(...data);
         var abot = Math.min(...data);
@@ -473,19 +475,48 @@ function plotEspectrum(){
         ctx.clearRect(0,0,w,h);
 
         ctx.beginPath();
-        ctx.moveTo(0,h);
+        ctx.moveTo(0,h*(1-(data[0]-abot)/ah));
 
         data.forEach((v,k) => {
             var x = k / aw;
-            var y = (v - abot) / ah;
+            var y = (v-abot)/ah-0.05;
             ctx.lineTo(x *w, h*(1-y));
         });
         ctx.strokeStyle="#1f77b4";
         ctx.stroke();
 
+        var ti = data.topIndex(5);
+
+        ti.forEach((n,k) => {
+            var v = data[n];
+            var x = n / aw;
+            var y = (v-abot)/ah-0.05;
+            var f = Math.round(n*config.samplerate / data.length);
+            ctx.font = "12px Arial";
+            ctx.fillStyle="white";
+            ctx.fillText(f,x *w, h*(1-y));
+        });
+
         $("#g-spectrum-el").show();
         document.getElementById("g-spectrum-el").scrollIntoView(true);
     });
+}
+
+Array.prototype.topIndex = function(nb){
+    var r = [];
+    var sp2 = this.slice();
+    for(var i = 0; i<nb;i++){
+        var max = 0;
+        for(var n = 0; n<sp2.length;n++){
+            if(sp2[n] > max){
+                maxIndex = n;
+                max = sp2[n];
+            }
+        }
+        r.push(maxIndex);
+        sp2[maxIndex] = 0;
+    }
+    return r;
 }
 
 function plotEstack(){
