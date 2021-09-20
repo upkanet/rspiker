@@ -304,10 +304,6 @@ function plotEdata(graph,mod,electrode,config){
         var canvas = $(`#${graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
 
-        //Stim Square
-        ctx.fillStyle="red";
-        ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
-
         //Data
         ctx.beginPath();
         ctx.moveTo(0,h*(1-(data[0] - abot) / ah));
@@ -319,6 +315,10 @@ function plotEdata(graph,mod,electrode,config){
         });
         ctx.strokeStyle="#1f77b4";
         ctx.stroke();
+
+        //Stim Square
+        ctx.fillStyle="rgba(255,0,0,0.5)";
+        ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
 
         //Abscisse
         var isel = (graph.substr(-2) == "el");
@@ -342,10 +342,40 @@ function plotEdata(graph,mod,electrode,config){
             ctx.fillText((s+1)*timewidth,w,h/2-20);
         }
 
+        if(graph == "g-raw-el"){
+            d.append(`<canvas id="cursor-canvas" width="${d.width()}" height="${d.height()}" class="cursor"></canvas>`);
+            cursorCanvas();
+        }
+
         dataloader();
         plotSpikes(graph, electrode);
     });
     abordable.push(f);
+}
+
+function cursorCanvas(){
+    var canvas = $(`#cursor-canvas`)[0];
+    canvas.addEventListener('mousemove', (e)=>{
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        if(!$('#spectrum-cursor-cb').is(':checked')){
+            return true;
+        }
+        ctx.fillStyle="rgba(255, 255, 255, 0.1)";
+        var w = $('#spectrum-cursor-width').val()/100;
+        ctx.fillRect(e.clientX-20,0,w*canvas.width,canvas.height);
+    });
+    canvas.addEventListener('contextmenu', (e) => {
+        if(!$('#spectrum-cursor-cb').is(':checked')){
+            return true;
+        }
+        e.preventDefault();
+        var xp = e.clientX / canvas.width;
+        var wp = $('#spectrum-cursor-width').val()/100;
+        console.log(xp,wp);
+        plotEspectrum();
+        return false;
+    }, false);
 }
 
 function plotERaster(graph,electrode,config){

@@ -3,6 +3,7 @@
 <head>
     <title>Axorus - Spiker</title>
 </head>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.0/dist/css/bootstrap-dark.min.css" integrity="sha256-kbkRO+z3M7RfAEv8nS4CXvEWInRxgMkPycqEr+QW0+0=" crossorigin="anonymous">
 <script src="js/jquery3.5.1.min.js"></script>
 <script src="js/plotly-latest.min.js"></script>
@@ -66,6 +67,7 @@
     }
 
     .graph-el{
+        position: relative;
         width: calc(100% - 40px);
         height: calc(100% - 150px);
         margin-left:20px;
@@ -73,6 +75,12 @@
 
     .graph-el-detail{
         display:none;
+    }
+
+    .cursor{
+        position: absolute;
+        top:0;
+        left:0;
     }
 
     .test{
@@ -85,22 +93,22 @@
     <div id="data-progress" style="display: none;"></div>
     <ul class="nav nav-tabs nav-justified">
         <li class="nav-item">
-            <a class="nav-link active" data-tab="home" onclick="javascript:tshow(this);">Home</a>
+            <a class="nav-link active" data-tab="home" onclick="javascript:tshow(this);"><i class="ri-home-line"></i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="raw" onclick="javascript:tshow(this);">Raw</a>
+            <a class="nav-link" data-tab="raw" onclick="javascript:tshow(this);"><i class="ri-bar-chart-fill"></i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</a>
+            <a class="nav-link" data-tab="filtered" onclick="javascript:tshow(this);"><i class="ri-pulse-line"></i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</a>
+            <a class="nav-link" data-tab="raster" onclick="javascript:tshow(this);"><i class="ri-bar-chart-grouped-line"></i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="heatmap" onclick="javascript:tshow(this);">Heatmap</a>
+            <a class="nav-link" data-tab="heatmap" onclick="javascript:tshow(this);"><i class="ri-grid-fill"></i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);">Config</a>
+            <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);"><i class="ri-settings-line"></i></a>
         </li>
     </ul>
     <div class="container">
@@ -122,7 +130,7 @@
     </div>
     <div class="tab tab-active" id="home">
         <div id="home-grid">
-            <button type="button" class="btn btn-primary" data-tab="raw" onclick="javascript:tshow(this);">Raw</button>
+            <button type="button" class="btn btn-primary" data-tab="raw" onclick="javascript:tshow(this);">Spectrum</button>
             <button type="button" class="btn btn-primary" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</button>
             <button type="button" class="btn btn-primary" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</button>
             <button type="button" class="btn btn-primary" data-tab="heatmap" onclick="javascript:tshow(this);">Heatmap</button>
@@ -134,8 +142,18 @@
         <div id="g-raw-el" class="graph-el" onclick="show('raw')"></div>
         <div class="container">
             <div class="row  justify-content-md-center">
-                <div class="col col-lg-2">
-                    <button class="btn btn-primary" onclick="plotEspectrum()">Spectrum</button>
+                <div class="col col-lg-3">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-text">
+                            Spectrum &nbsp;
+                            <input id="spectrum-cursor-cb" class="form-check-input mt-0" type="checkbox" value="" onclick="cursorCanvas()">
+                            &nbsp; <i class="ri-mouse-line"></i> right click
+                        </div>
+                        <input id="spectrum-cursor-width" type="number" class="form-control form-control-sm" value="10" min="0" max="100">
+                        <div class="input-group-text">
+                            % width
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
