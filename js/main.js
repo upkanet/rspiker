@@ -682,3 +682,7 @@ function clearCache(mod){
     });
 }
 
+
+function infoHM(){
+    alert("Green : 10 x std dev beyond average\nBlack : Average\nRed : -10 x std dev beneath average");
+}
