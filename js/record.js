@@ -69,6 +69,7 @@ class Config {
         //Save to server
         $.ajax({
             method: "POST",
+            async: false,
             url: `/saveconfig`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(new_config),
@@ -84,6 +85,43 @@ class Config {
 
 var config = new Config();
 console.log(config);
+
+class Progressbar {
+    constructor(){
+        this.val = 0;
+        this.total = 0;
+    }
+
+    init(total){
+        this.jq = $('#data-progress');
+        this.total = total;
+    }
+
+    count(){
+        this.val++;
+        if(this.val >= this.total){
+            this.hide();
+            this.reset();
+        }
+        else{
+            this.show();
+        }
+    }
+
+    reset(){
+        this.val = 0;
+    }
+
+    show(){
+        this.jq.show();
+        this.jq.css('width',Math.round(this.val/this.total * 100) + "%");
+    }
+
+    hide(){
+        this.jq.hide();
+    }
+}
+var progressbar = new Progressbar();
 
 class MEA {
     constructor(mode){

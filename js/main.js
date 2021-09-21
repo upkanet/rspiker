@@ -57,7 +57,7 @@ function open_el(mod,n){
         case("raster"): modurl = "r"; break;
         default: break;
     }
-    dataloaderinit(1);
+    progressbar.init(1);
     if(mod == "raster"){
         plotERaster(`g-${mod}-el`,n, config);
     }
@@ -77,31 +77,6 @@ function select_el(){
     var el = prompt("Electrode number");
     var mod = $('.tab-active').attr('id');
     open_el(mod,el);
-}
-
-//Loading
-var dataloadertotal = 0;
-var dataloadercount = 0;
-
-function dataloaderinit(t){
-    dataloadercount = 0;
-    dataloadertotal = t;
-}
-
-function dataloader(){
-    dataloadercount++;
-    progress(dataloadercount,dataloadertotal);
-}
-
-function progress(n,t){
-    var d = $('#data-progress');
-    if(n == t){
-        d.hide();
-    }
-    else{
-        d.show();
-        d.css('width',Math.round(n/t * 100) + "%");
-    }
 }
 
 //Slider
@@ -128,7 +103,7 @@ function refresh(){
         var e = g.data('e');
         mod = mod2url(mod);
         g = g[0].id;
-        dataloaderinit(1);
+        progressbar.init(1);
         plotEdata(g,mod,e,config);
     }
     else{
@@ -173,14 +148,14 @@ function populateGridName(name){
         case("heatmap"): populateHeatmap();
         default: return;
     }
-    dataloaderinit(256);
+    progressbar.init(256);
     for(var i = 1; i <= 256;i++){
         plotEdata(`g-${name}-${i}`,mod,i,config);
     }
 }
 
 function populateRaster(){
-    dataloaderinit(256);
+    progressbar.init(256);
     for(var i = 1; i <= 256;i++){
         plotERaster(`g-raster-${i}`,i, config);
     }
@@ -195,7 +170,7 @@ function populateHeatmap(){
 }
 
 function loadHM(){
-    dataloaderinit(256);
+    progressbar.init(256);
     var s = $("#slider").val();
     for(var i = 1; i <= 256;i++){
         var f = $.ajax({
@@ -207,7 +182,7 @@ function loadHM(){
             }
         }).done((data, textStatus, jqXHR)=>{
             heatmap[jqXHR.electrode-1] = data;
-            dataloader();
+            progressbar.count();
             showHM();
         });
         abordable.push(f);
@@ -347,7 +322,7 @@ function plotEdata(graph,mod,electrode,config){
             cursorCanvas();
         }
 
-        dataloader();
+        progressbar.count();
         plotSpikes(graph, electrode);
     });
     abordable.push(f);
@@ -412,7 +387,7 @@ function plotERaster(graph,electrode,config){
                 ctx.fillRect(x * w,y * h,1,sh);
             }
         });
-        dataloader();
+        progressbar.count();
     });
     abordable.push(f);
 }
