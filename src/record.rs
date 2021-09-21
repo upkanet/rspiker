@@ -10,7 +10,7 @@ use std::io::SeekFrom;
 
 use serde::Deserialize;
 
-use realfft::{RealFftPlanner,num_complex::Complex};
+use realfft::RealFftPlanner;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -315,19 +315,6 @@ impl Electrode {
 
         return r;
     }
-
-    pub fn topfreq(&mut self, k: usize, k1:usize) -> u64 {
-        let s = self.spectrum(k,k1);
-        let mut max = 0.0;
-        let mut imax:u64 = 0;
-        for i in 0..s.len() {
-            if s[i] > max {
-                max = s[i];
-                imax = i as u64;
-            }
-        }
-        return imax;
-    }
 }
 
 #[derive(Clone, Copy)]
@@ -432,11 +419,6 @@ impl Record {
         return self.electrodes[n].slice(m,k,k1);
     }
 
-    pub fn topfreq(&mut self, s: u64, n: usize) -> u64{
-        let (k,k1) = self.stok(s);
-        return self.electrodes[n].topfreq(k, k1);
-    }
-
     pub fn stimstart(&self, n:usize) -> f64 {
         let e = &self.electrodes[n].raw;
         let mut stimstart = 0;
@@ -481,7 +463,7 @@ impl Record {
     }
 }
 
-pub fn progress(first: bool, n:u64,t:u64){
+/*pub fn progress(first: bool, n:u64,t:u64){
     if first{
         print!("{}",(1..100).map(|_| "-").collect::<String>());
     }
@@ -493,4 +475,4 @@ pub fn progress(first: bool, n:u64,t:u64){
         }
     }
     print!("\n");
-}
+}*/
