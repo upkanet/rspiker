@@ -68,6 +68,13 @@ fn samplerate() -> String {
     }
 }
 
+#[get("/filename")]
+fn filename() -> String {
+    unsafe{
+        return R.fileparam.filepath.to_string();
+    }
+}
+
 #[get("/duration")]
 fn duration() -> String {
     unsafe {
@@ -137,7 +144,7 @@ async fn main() -> Result<(), rocket::Error>{
         .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
             webbrowser::open("http://localhost:8000/").unwrap();
         })))
-        .mount("/", routes![index,favicon,js,config,electrode,samplerate,duration,timeslice,spectrum,clearcache,stimstart,saveconfig])
+        .mount("/", routes![index,favicon,js,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,stimstart,saveconfig])
         .launch()
         .await
 }

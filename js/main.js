@@ -1,6 +1,7 @@
 //Init
 $(init);
 function init(){
+    filenameTitle();
     loadConfig();
     initGrid();
     updateSlider();
@@ -10,6 +11,13 @@ function init(){
 }
 
 var abordable = [];
+
+function filenameTitle(){
+    $.get(`/filename`,(f) => {
+        var a = f.split("\\");
+        $('title').append(" - "+a.at(-1));
+    })
+}
 
 //Nav
 function tshow(e){
@@ -479,27 +487,36 @@ function plotEspectrum(xp,wp){
 
         data.forEach((v,k) => {
             var x = k / aw;
-            var y = (v-abot)/ah-0.05;
+            var y = (v-abot)/ah;
+            y = 0.9 * y + 0.05;
             ctx.lineTo(x *w, h*(1-y));
         });
         ctx.strokeStyle="#1f77b4";
         ctx.stroke();
 
-        var ti = data.topIndex(5);
+        var top_count = Number($('#spectrum-top-freq').val());
+        var ti = data.topIndex(top_count);
 
         ti.forEach((n,k) => {
             var v = data[n];
             var x = n / aw;
-            var y = (v-abot)/ah-0.05;
-            var f = Math.round(n*config.samplerate / data.length / 2);
+            var y = (v-abot)/ah;
+            //var f = Math.round(n*config.samplerate / data.length / 2);
+            console.log(data.length,config.samplerate);
+            var f = binIndexToFrequency(n,config.samplerate,data.length * 2);
             ctx.font = "12px Arial";
             ctx.fillStyle="white";
+            y = 0.9 * y + 0.05;
             ctx.fillText(f,x *w, h*(1-y));
         });
 
         $("#g-spectrum-el").show();
         document.getElementById("g-spectrum-el").scrollIntoView(true);
     });
+}
+
+function binIndexToFrequency(n,samplerate,samplelength){
+    return Number(n * samplerate / samplelength).toFixed(1);
 }
 
 function playSpectrum(){
