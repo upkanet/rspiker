@@ -60,6 +60,15 @@ fn saveconfig(user_config: Json<Config>) -> String {
     return json!("").to_string();
 }
 
+#[get("/config")]
+fn config() -> String {
+    unsafe {
+        let c = R.getconfig();
+        let j = json!(c);
+        return j.to_string();
+    }
+}
+
 
 #[get("/samplerate")]
 fn samplerate() -> String {
@@ -93,12 +102,6 @@ fn stimstart(n: usize) -> String {
 async fn js(f: String) -> Option<NamedFile> {
     let path = Path::new("js/").join(f);
     println!("{:?}",path);
-    NamedFile::open(&path).await.ok()
-}
-
-#[get("/config")]
-async fn config() -> Option<NamedFile> {
-    let path = Path::new("config.json");
     NamedFile::open(&path).await.ok()
 }
 

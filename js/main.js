@@ -2,7 +2,7 @@
 $(init);
 function init(){
     filenameTitle();
-    loadConfig();
+    config.fillinputs();
     initGrid();
     updateSlider();
     $(".graph-el-detail").click(function(){
@@ -58,7 +58,6 @@ function open_el(mod,n){
         default: break;
     }
     dataloaderinit(1);
-    var config = getConfig();
     if(mod == "raster"){
         plotERaster(`g-${mod}-el`,n, config);
     }
@@ -130,7 +129,6 @@ function refresh(){
         mod = mod2url(mod);
         g = g[0].id;
         dataloaderinit(1);
-        var config = getConfig();
         plotEdata(g,mod,e,config);
     }
     else{
@@ -157,7 +155,6 @@ function initGrid(){
 }
 
 function initGridName(name){
-    var config = getConfig();
     var grid = $(`#${name}`);
     grid.append('<div class="el-grid"></div>');
     grid = grid.children().last();
@@ -176,7 +173,6 @@ function populateGridName(name){
         case("heatmap"): populateHeatmap();
         default: return;
     }
-    var config = getConfig();
     dataloaderinit(256);
     for(var i = 1; i <= 256;i++){
         plotEdata(`g-${name}-${i}`,mod,i,config);
@@ -184,7 +180,6 @@ function populateGridName(name){
 }
 
 function populateRaster(){
-    var config = getConfig();
     dataloaderinit(256);
     for(var i = 1; i <= 256;i++){
         plotERaster(`g-raster-${i}`,i, config);
@@ -194,7 +189,6 @@ function populateRaster(){
 var heatmap = Array(256);
 
 function populateHeatmap(){
-    var config = getConfig();
     $('#microslider').attr("max",config.timewidth * config.samplerate);
     setMicroSlider();
     loadHM();
@@ -228,7 +222,6 @@ function updateMicroSlider(){
 function updateMS(){
     var hmms = $('#heatmap-ms');
     var ms = $('#microslider').val();
-    var config = getConfig();
     var samplerate = config.samplerate;
     var stimstart = config.stimstart;
     var timewidth = config.timewidth;
@@ -238,7 +231,6 @@ function updateMS(){
 }
 
 function setMicroSlider(){
-    var config = getConfig();
     $('#microslider').val(config.stimstart % config.timewidth * config.samplerate);
     updateMicroSlider();
 }
@@ -465,7 +457,6 @@ function plotColor(x,start,end){
 function plotEspectrum(xp,wp){
     var electrode = $("#g-raw-el").data('e');
     var s = Number($("#slider").val());
-    var config = getConfig();
     var k = Math.floor((s+xp) * Number(config.samplerate));
     var k1 = Math.floor(Math.min(s+1,s+xp+wp) * Number(config.samplerate));
     var d = $(`#g-spectrum-el`);
@@ -545,7 +536,6 @@ Array.prototype.topIndex = function(nb){
 }
 
 function plotEstack(){
-    var config = getConfig();
     var timewidth = config.timewidth;
     var electrode = $("#g-raster-el").data('e');
     var step = $('#stack-width').val();
@@ -589,99 +579,6 @@ function plotHistoStack(histo){
 
     document.getElementById("g-stack-el").scrollIntoView(true);
 }
-
-function getSampleRate(){
-    $.ajax({
-        url: `/samplerate`,
-        async: false
-    }).done((data) => {
-        samplerate = data;
-    });
-    return Number(samplerate);
-}
-
-function getStimStart(){
-    var electrode = 127;
-    $.ajax({
-        url: `/stimstart/${electrode-1}`,
-        async: false
-    }).done((data) => {
-        stimstart = data;
-    });
-    return Number(stimstart);
-}
-
-function fromServerConfig(){
-    var config = {};
-    $.ajax({
-        dataType: 'json',
-        url: '/config',
-        async: false
-    }).done((data) => {
-        config = data;
-    });
-    config.samplerate = getSampleRate();
-    config.stimstart =  getStimStart();
-    return config;
-}
-
-function loadConfig(){
-    var config = fromServerConfig();
-    $('#filterfc').val(config.fc);
-    $('#threshold').val(config.threshold);
-    $('#timewidth').val(config.timewidth);
-    $('#stimduration').val(config.stimduration);
-    $('#map_mea').val(config.map_mea);
-    $('#samplerate').val(config.samplerate);
-    $('#stimstart').val(config.stimstart);
-}
-
-function getConfig(){
-    var config = {};
-    config.fc = Number($('#filterfc').val());
-    config.threshold = Number($('#threshold').val());
-    config.timewidth = Number($('#timewidth').val());
-    config.stimduration = Number($('#stimduration').val());
-    config.map_mea = $('#map_mea').val().split(",");
-    config.samplerate = $('#samplerate').val();
-    config.stimstart = $('#stimstart').val();
-    return config;
-}
-
-function saveConfig(){
-    var config = getConfig();
-    var oldconfig = fromServerConfig();
-    delete config.map_mea;
-    delete config.samplerate;
-    delete config.stimstart;
-    if(config.fc != oldconfig.fc){
-        clearCache("f");
-        clearCache("s");
-        clearCache("hm");
-    }
-    if(config.threshold != oldconfig.threshold){
-        clearCache("s");
-    }
-    console.log(config);
-    $.ajax({
-        method: "POST",
-        url: `/saveconfig`,
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify(config),
-        dataType:"json",
-        success: (d) => {
-            console.log(d);
-        }
-      });
-}
-
-function clearCache(mod){
-    console.log("Clear Cache for",mod);
-    $.getJSON(`/clearcache/${mod}`,(d) => {
-        console.log(d);
-    });
-}
-
 
 function infoHM(){
     alert("Green : 10 x std dev beyond average\nBlack : Average\nRed : -10 x std dev beneath average");

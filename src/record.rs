@@ -8,21 +8,23 @@ use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
 
-use serde::Deserialize;
+use serde::{Serialize,Deserialize};
 
 use realfft::RealFftPlanner;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub fc: u64,
     pub threshold: f64,
     pub timewidth: u64,
-    pub stimduration: u64
+    pub stimduration: u64,
+    pub map_mea: Vec<u64>
 }
 
 impl Config {
     pub const fn new() -> Config{
-        return Config{fc: 0, threshold: 0.0, timewidth: 0, stimduration: 0};
+        let m = Vec::new();
+        return Config{fc: 0, threshold: 0.0, timewidth: 0, stimduration: 0, map_mea: m};
     }
 
     pub fn get() -> Config{
@@ -447,8 +449,16 @@ impl Record {
     }
 
     pub fn saveconfig(&self, c: Config){
+        println!("input {:?}",c);
         unsafe{
             CONFIG = c;
+            println!("new {:?}",CONFIG);
+        }
+    }
+
+    pub fn getconfig(&self) -> Config {
+        unsafe{
+            return CONFIG.clone();
         }
     }
     
