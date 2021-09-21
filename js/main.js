@@ -491,7 +491,7 @@ function plotEspectrum(xp,wp){
             var v = data[n];
             var x = n / aw;
             var y = (v-abot)/ah-0.05;
-            var f = Math.round(n*config.samplerate / data.length);
+            var f = Math.round(n*config.samplerate / data.length / 2);
             ctx.font = "12px Arial";
             ctx.fillStyle="white";
             ctx.fillText(f,x *w, h*(1-y));
