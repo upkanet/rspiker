@@ -482,13 +482,12 @@ class Electrode {
     }
 }
 
-
 //Heatmap
 var heatmap = Array(256);
 
 function populateHeatmap(){
     $('#microslider').attr("max",config.timewidth * config.samplerate);
-    setMicroSlider();
+    microSliderStimStart();
     loadHM();
 }
 
@@ -528,7 +527,7 @@ function updateMS(){
     hmms.val(`+${millisec} ms (${(away<0?"":"+") + away})`);
 }
 
-function setMicroSlider(){
+function microSliderStimStart(){
     $('#microslider').val(config.stimstart % config.timewidth * config.samplerate);
     updateMicroSlider();
 }

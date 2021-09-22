@@ -49,8 +49,8 @@ function refresh(){
     $('#time').val(`${pos} sec`);
 
     var id = $('.tab-active').first().attr('id');
-    if(id == "home"){
-        console.log("home");
+    if(id == "home" || id == "config"){
+        console.log(id);
         return 0;
     }
     else if(id.includes('_el')){
@@ -74,9 +74,9 @@ function refresh(){
 function initSliders(){
     $.getJSON("\duration", (duration) => {
         var s = Math.floor(duration / config.timewidth);
-        $("#slider").attr('max',s);
+        $("#slider").attr('max',s).val(0);
     });
-    $('#microslider').attr("max",config.timewidth * config.samplerate);
+    $('#microslider').attr("max",config.timewidth * config.samplerate).val(0);
 }
 
 //Graphics
@@ -113,6 +113,13 @@ function bindButtons(){
     $('#g-spectrum-el').click(this,hideTarget);
     $('#btn-stack').click(plotStack);
     $(`#g-stack-el`).click(this,hideTarget);
+    $('#btn-ms-down').click(microSliderDown);
+    $('#btn-ms-up').click(microSliderUp);
+    $('#btn-ms-stimstart').click(microSliderStimStart);
+    $('#btn-heatmap-info').click(infoHM);
+    $('#btn-config-save').click(saveConfig);
+    $('#btn-config-reset').click(resetConfig);
+
 }
 
 function select_el(){
@@ -155,4 +162,15 @@ function plotStack(){
 
 function infoHM(){
     alert("Green : 10 x std dev beyond average\nBlack : Average\nRed : -10 x std dev beneath average");
+}
+
+function saveConfig(){
+    config.save();
+    setTimeout(initSliders,120);
+    setTimeout(refresh,150);
+}
+
+function resetConfig(){
+    config.fromserver();
+    config.fillinputs();
 }

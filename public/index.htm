@@ -197,11 +197,11 @@
                 </div>
                 <div class="col-4">
                     <div class="input-group">
-                        <button type="button" class="btn btn-secondary" onclick="microSliderDown()">&lt;</button>
-                        <button type="button" class="btn btn-secondary" onclick="setMicroSlider()">Stim Start</button>
+                        <button id="btn-ms-down" type="button" class="btn btn-secondary">&lt;</button>
+                        <button id="btn-ms-stimstart" type="button" class="btn btn-secondary">Stim Start</button>
                         <input id="heatmap-ms" type="text" class="form-control form-control-sm" disabled>
-                        <button type="button" class="btn btn-secondary" onclick="microSliderUp()">&gt;</button>
-                        <button type="button" class="btn btn-primary" onclick="infoHM()"><i class="ri-question-fill"></i></button>
+                        <button id="btn-ms-up" type="button" class="btn btn-secondary">&gt;</button>
+                        <button id="btn-heatmap-info" type="button" class="btn btn-primary"><i class="ri-question-fill"></i></button>
                       </div>
                 </div>
             </div>
@@ -246,8 +246,8 @@
                                         <span class="input-group-text">Hz</span>
                                     </div>
                                     <input type="hidden" id="map_mea" value="">
-                                    <button class="btn btn-primary" onclick="config.save();">Save</button>
-                                    <button class="btn btn-secondary" onclick="config.fromserver();config.fillinputs();">Reset</button>
+                                    <button id="btn-config-save" class="btn btn-primary">Save</button>
+                                    <button id="btn-config-reset" class="btn btn-secondary">Reset</button>
                                     <input id="map_mea" type="hidden" value="">
                                 </div>
                             </div>
