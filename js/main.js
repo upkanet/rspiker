@@ -41,6 +41,7 @@ function open_el(mode,n){
 
 function refresh(){
     abordable.abortAll();
+    progressbar.init(1);
     console.log("refresh");
 
     //Slider
@@ -87,7 +88,7 @@ function initGrid(){
 
 //To move
 
-var heatmap = Array(256);
+/*var heatmap = Array(256);
 
 function populateHeatmap(){
     $('#microslider').attr("max",config.timewidth * config.samplerate);
@@ -170,7 +171,7 @@ function plotHM(ms){
         if(v<0) r = -v;
         $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);
     }
-}
+}*/
 
 //KeyListener
 document.addEventListener('keydown', logKey);
@@ -186,12 +187,15 @@ function logKey(e){
 
 //Buttons functions
 function bindButtons(){
+    $('#slider').change(refresh);
     $('#spike-layer').click(refresh);
     $('#btn-select-el').click(select_el);
     $('#spectrum-cursor-cb').click(refresh);
     $('#btn-full-sample').click(fullFrameSpectrum);
     $('#btn-play-spectrum').click(playSpectrum);
     $('#g-spectrum-el').click(this,hideTarget);
+    $('#btn-stack').click(plotStack);
+    $(`#g-stack-el`).click(this,hideTarget);
 }
 
 function select_el(){
@@ -222,6 +226,14 @@ function playSpectrum(){
 
 function hideTarget(ev){
     $(ev.target).hide();
+    document.getElementsByTagName("body")[0].scrollIntoView(true);
+}
+
+function plotStack(){
+    var number = $(`#g-raster-el`).attr('data-e');
+    var el = new Electrode("g-stack-el", number, "stack");
+    $(`#g-stack-el`).show();
+    el.plot();
 }
 
 function infoHM(){

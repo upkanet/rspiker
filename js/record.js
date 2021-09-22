@@ -93,8 +93,10 @@ class Progressbar {
     }
 
     init(total){
+        this.val = 0;
         this.jq = $('#data-progress');
         this.total = total;
+        this.hide();
     }
 
     count(){
