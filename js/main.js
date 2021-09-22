@@ -19,7 +19,6 @@ function filenameTitle(){
 
 //Nav
 function tshow(e){
-    abordable.abortAll();
     var tn = $(e).data('tab');
     show(tn);
     refresh();
@@ -37,14 +36,19 @@ function show(tabname){
 }
 
 function open_el(mode,n){
-    abordable.abortAll();
     show(`${mode}_el`);
     $(`#g-${mode}-el`).attr('data-e',n);
     refresh();
 }
 
 function refresh(){
+    abordable.abortAll();
     console.log("refresh");
+
+    //Slider
+    var pos = Number($("#slider").val()*config.timewidth).toFixed(1);
+    $('#time').val(`${pos} sec`);
+
     var id = $('.tab-active').first().attr('id');
     if(id == "home"){
         console.log("home");
@@ -53,11 +57,9 @@ function refresh(){
     else if(id.includes('_el')){
         var mode = id.split('_')[0];
         console.log("Plot Electrode", mode);
-        var g = $(`#g-${mode}-el`);
-        var n = g.attr('data-e');
-        var el = new Electrode(`g-${mode}-el`,n,mode);
-        el.solo = true;
-        el.squarecursor = true;
+        var n = $(`#g-${mode}-el`).attr('data-e');
+        var el = new Electrode(`g-${mode}-el`,n,mode,true);
+        if(mode == "raw") el.squarecursor = true;
         el.plot();
     }
     else{
@@ -68,36 +70,16 @@ function refresh(){
 
 function select_el(){
     var el = prompt("Electrode number");
-    var mod = $('.tab-active').attr('id');
-    open_el(mod,el);
+    var mode = $('.tab-active').attr('id');
+    open_el(mode,el);
 }
 
-//Slider
+//Sliders
 function updateSlider(){
-    abordable.abortAll();
-    heatmap = Array(256);
-    $.getJSON("\config", function(config){
-        $.getJSON("\duration", (duration) => {
-            var s = Math.floor(duration / config.timewidth);
-            var sl = $("#slider");
-            sl.attr('max',s);
-            var pos = Number(sl.val()*config.timewidth).toFixed(1);
-            $('#time').val(`${pos} sec`);
-            refresh();
-        });
+    $.getJSON("\duration", (duration) => {
+        var s = Math.floor(duration / config.timewidth);
+        $("#slider").attr('max',s);
     });
-}
-
-
-
-function mod2url(modname){
-    var modurl = "";
-    switch(modname){
-        case("raw"): modurl = "e"; break;
-        case("filtered"): modurl = "f"; break;
-        default: console.log("mod2url : Unknown modname",modname);
-    }
-    return modurl;
 }
 
 //Graphics
@@ -206,30 +188,6 @@ function plotHM(ms){
     }
 }
 
-function cursorCanvas(){
-    var canvas = $(`#cursor-canvas`)[0];
-    canvas.addEventListener('mousemove', (e)=>{
-        var ctx = canvas.getContext('2d');
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        if(!$('#spectrum-cursor-cb').is(':checked')){
-            return true;
-        }
-        ctx.fillStyle="rgba(255, 255, 255, 0.1)";
-        var w = $('#spectrum-cursor-width').val()/100;
-        ctx.fillRect(e.clientX-20,0,w*canvas.width,canvas.height);
-    });
-    canvas.addEventListener('contextmenu', (e) => {
-        if(!$('#spectrum-cursor-cb').is(':checked')){
-            return true;
-        }
-        e.preventDefault();
-        var xp = e.clientX / canvas.width;
-        var wp = $('#spectrum-cursor-width').val()/100;
-        plotEspectrum(xp,wp);
-        return false;
-    }, false);
-}
-
 function plotERaster(graph,electrode,config){
     var stimstart = config.stimstart;
     var sample_rate = config.samplerate;
@@ -281,85 +239,12 @@ function plotColor(x,start,end){
     return col;
 }
 
-function plotEspectrum(xp,wp){
-    var electrode = $("#g-raw-el").data('e');
-    var s = Number($("#slider").val());
-    var k = Math.floor((s+xp) * Number(config.samplerate));
-    var k1 = Math.floor(Math.min(s+1,s+xp+wp) * Number(config.samplerate));
-    var d = $(`#g-spectrum-el`);
-    var w = d.width();
-    var h = d.height();
-    d.html(`<canvas width="${w}" height="${h}"></canvas>`);
-    var canvas = $(`#g-spectrum-el>canvas`)[0];
-    var ctx = canvas.getContext('2d');
-    var f = $.getJSON(`/spectrum/${electrode-1}/slice/${k}/${k1}`, (data) => {
-        var aw = data.length;
-        var atop = Math.max(...data);
-        var abot = Math.min(...data);
-        var ah = atop - abot;
-
-        ctx.clearRect(0,0,w,h);
-
-        ctx.beginPath();
-        ctx.moveTo(0,h*(1-(data[0]-abot)/ah));
-
-        data.forEach((v,k) => {
-            var x = k / aw;
-            var y = (v-abot)/ah;
-            y = 0.9 * y + 0.05;
-            ctx.lineTo(x *w, h*(1-y));
-        });
-        ctx.strokeStyle="#1f77b4";
-        ctx.stroke();
-
-        var top_count = Number($('#spectrum-top-freq').val());
-        var ti = data.topIndex(top_count);
-
-        ti.forEach((n,k) => {
-            var v = data[n];
-            var x = n / aw;
-            var y = (v-abot)/ah;
-            //var f = Math.round(n*config.samplerate / data.length / 2);
-            console.log(data.length,config.samplerate);
-            var f = binIndexToFrequency(n,config.samplerate,data.length * 2);
-            ctx.font = "12px Arial";
-            ctx.fillStyle="white";
-            y = 0.9 * y + 0.05;
-            ctx.fillText(f,x *w, h*(1-y));
-        });
-
-        $("#g-spectrum-el").show();
-        document.getElementById("g-spectrum-el").scrollIntoView(true);
-    });
-}
-
-function binIndexToFrequency(n,samplerate,samplelength){
-    return Number(n * samplerate / samplelength).toFixed(1);
-}
-
 function playSpectrum(){
     var wp = $('#spectrum-cursor-width').val()/100;
     for(var i = 0;i<=100;i++){
         var xp = Number(i/100);
         setTimeout((a,b)=>{  plotEspectrum(a,b); }, i*50, xp, wp);
     }
-}
-
-Array.prototype.topIndex = function(nb){
-    var r = [];
-    var sp2 = this.slice();
-    for(var i = 0; i<nb;i++){
-        var max = 0;
-        for(var n = 0; n<sp2.length;n++){
-            if(sp2[n] > max){
-                maxIndex = n;
-                max = sp2[n];
-            }
-        }
-        r.push(maxIndex);
-        sp2[maxIndex] = 0;
-    }
-    return r;
 }
 
 function plotEstack(){

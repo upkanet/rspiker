@@ -188,23 +188,27 @@ class Grid {
 }
 
 class Electrode {
-    constructor(graph, number, mode){
+    constructor(graph, number, mode, solo = false){
         this.graph = graph;
         this.number = number;
         this.mode = mode;
-        this.solo = false;
+        this.solo = solo;
         this.squarecursor = false;
         switch(this.mode){
             case("raw"): this.short = "e"; break;
             case("filtered"): this.short = "f"; break;
             case("raster"): this.short = "r"; break;
             case("heatmap"): this.short = "h"; break;
+            case("spectrum"): this.short = "s"; break;
         }
     }
 
     plot(){
         if(["e","f"].includes(this.short)){
             this.plotSignal();
+        }
+        else if(this.short == "s"){
+            this.plotSpectrum();
         }
     }
 
@@ -270,7 +274,7 @@ class Electrode {
             //Square Cursor
             if(this.squarecursor){
                 d.append(`<canvas id="cursor-canvas" width="${d.width()}" height="${d.height()}" class="cursor"></canvas>`);
-                cursorCanvas();
+                this.cursorCanvas();
             }
         
             //Spikes
@@ -303,4 +307,113 @@ class Electrode {
         });
         abordable.push(f);
     }
+
+    plotSpectrum(){
+        var s = Number($("#slider").val());
+        var k = Math.floor((s+this.xp) * Number(config.samplerate));
+        var k1 = Math.floor(Math.min(s+1,s+this.xp+this.wp) * Number(config.samplerate));
+        var d = $(`#${this.graph}`);
+        var w = d.width();
+        var h = d.height();
+        d.html(`<canvas width="${w}" height="${h}"></canvas>`);
+        var canvas = $(`#${this.graph}>canvas`)[0];
+        var ctx = canvas.getContext('2d');
+        var f = $.getJSON(`/spectrum/${this.number-1}/slice/${k}/${k1}`, (data) => {
+            var aw = data.length;
+            var atop = Math.max(...data);
+            var abot = Math.min(...data);
+            var ah = atop - abot;
+    
+            ctx.clearRect(0,0,w,h);
+    
+            ctx.beginPath();
+            ctx.moveTo(0,h*(1-(data[0]-abot)/ah));
+    
+            data.forEach((v,k) => {
+                var x = k / aw;
+                var y = (v-abot)/ah;
+                y = 0.9 * y + 0.05;
+                ctx.lineTo(x *w, h*(1-y));
+            });
+            ctx.strokeStyle="#1f77b4";
+            ctx.stroke();
+    
+            var top_count = Number($('#spectrum-top-freq').val());
+            var ti = data.topIndex(top_count);
+    
+            ti.forEach((n,k) => {
+                var v = data[n];
+                var x = n / aw;
+                var y = (v-abot)/ah;
+                //var f = Math.round(n*config.samplerate / data.length / 2);
+                console.log(data.length,config.samplerate);
+                var f = binIndexToFrequency(n,config.samplerate,data.length * 2);
+                ctx.font = "12px Arial";
+                ctx.fillStyle="white";
+                y = 0.9 * y + 0.05;
+                ctx.fillText(f,x *w, h*(1-y));
+            });
+    
+            $(`#${this.graph}`).show();
+            document.getElementById(this.graph).scrollIntoView(true);
+        });
+    }
+
+    plotFullSampleSpectrum(){
+        this.setTrunc(0,1);
+        this.plotSpectrum();
+    }
+
+    setTrunc(xp,wp){
+        this.xp = xp;
+        this.wp = wp;
+    }
+
+    cursorCanvas(){
+        var canvas = $(`#cursor-canvas`)[0];
+        var cccb = $('#spectrum-cursor-cb');
+        canvas.addEventListener('mousemove', (e)=>{
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            if(!cccb.is(':checked')){
+                return true;
+            }
+            ctx.fillStyle="rgba(255, 255, 255, 0.1)";
+            var w = $('#spectrum-cursor-width').val()/100;
+            ctx.fillRect(e.clientX-20,0,w*canvas.width,canvas.height);
+        });
+        canvas.addEventListener('contextmenu', (e) => {
+            if(!cccb.is(':checked')){
+                return true;
+            }
+            e.preventDefault();
+            var xp = e.clientX / canvas.width;
+            var wp = $('#spectrum-cursor-width').val()/100;
+            var el = new Electrode("g-spectrum-el",this.number,"spectrum");
+            el.setTrunc(xp,wp);
+            el.plot();
+            return false;
+        }, false);
+    }
+}
+
+function binIndexToFrequency(n,samplerate,samplelength){
+    return Number(n * samplerate / samplelength).toFixed(1);
+}
+
+Array.prototype.topIndex = function(nb){
+    var r = [];
+    var sp2 = this.slice();
+    for(var i = 0; i<nb;i++){
+        var max = 0;
+        for(var n = 0; n<sp2.length;n++){
+            if(sp2[n] > max){
+                maxIndex = n;
+                max = sp2[n];
+            }
+        }
+        r.push(maxIndex);
+        sp2[maxIndex] = 0;
+    }
+    return r;
 }
