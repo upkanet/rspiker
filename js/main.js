@@ -21,8 +21,8 @@ function filenameTitle(){
 function tshow(e){
     abordable.abortAll();
     var tn = $(e).data('tab');
-    gridcollect.collection[tn].populate();
     show(tn);
+    refresh();
 }
 
 function show(tabname){
@@ -36,23 +36,33 @@ function show(tabname){
     $(`#${tabname}`).addClass('tab-active');
 }
 
-function open_el(mod,n){
+function open_el(mode,n){
     abordable.abortAll();
-    show(`${mod}_el`);
-    var layout = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: 'white' }, xaxis: {'title': n, ticksuffix:'', spikemode: 'toaxis'}, yaxis: {spikemode: 'toaxis'}, hovermode: 'closest' };
-    var modurl = "";
-    switch(mod){
-        case("raw"): modurl = "e"; break;
-        case("filtered"): modurl = "f"; break;
-        case("raster"): modurl = "r"; break;
-        default: break;
+    show(`${mode}_el`);
+    $(`#g-${mode}-el`).attr('data-e',n);
+    refresh();
+}
+
+function refresh(){
+    console.log("refresh");
+    var id = $('.tab-active').first().attr('id');
+    if(id == "home"){
+        console.log("home");
+        return 0;
     }
-    progressbar.init(1);
-    if(mod == "raster"){
-        plotERaster(`g-${mod}-el`,n, config);
+    else if(id.includes('_el')){
+        var mode = id.split('_')[0];
+        console.log("Plot Electrode", mode);
+        var g = $(`#g-${mode}-el`);
+        var n = g.attr('data-e');
+        var el = new Electrode(`g-${mode}-el`,n,mode);
+        el.solo = true;
+        el.squarecursor = true;
+        el.plot();
     }
     else{
-        plotEdata(`g-${mod}-el`,modurl,n, config);
+        console.log("Collection Populate",id);
+        gridcollect.collection[id].populate();
     }
 }
 
@@ -78,24 +88,7 @@ function updateSlider(){
     });
 }
 
-function refresh(){
-    var id = $('.tab-active').first().attr('id');
-    if(id == "home"){
-        return 0;
-    }
-    else if(id.includes('_el')){
-        var mod = id.split('_')[0];
-        var g = $(`#g-${mod}-el`);
-        var e = g.data('e');
-        mod = mod2url(mod);
-        g = g[0].id;
-        progressbar.init(1);
-        plotEdata(g,mod,e,config);
-    }
-    else{
-        gridcollect.collection[id].populate();
-    }
-}
+
 
 function mod2url(modname){
     var modurl = "";

@@ -134,7 +134,7 @@ class Abordable {
 
     abortAll(){
         this.functions.forEach((f) => {
-            //f.abort();
+            f.abort();
         });
         this.functions = [];
     }
@@ -215,15 +215,13 @@ class Electrode {
         var stimwidth = $('#stimduration').val() / 1000;
         var stimendpos = (stimstart%timewidth + stimwidth) / timewidth;
         var s = $("#slider").val();
-        
-        console.log(this.graph);
         var d = $(`#${this.graph}`);
+        var w = d.width();
+        var h = d.height();
         d.html('');
         d.append(`<canvas width="${w}" height="${h}"></canvas>`);
         var canvas = $(`#${this.graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
-        var w = d.width();
-        var h = d.height();
 
         var f = $.getJSON(`/electrode/${this.short}/${this.number-1}/timeslice/${s}`, (data) => {
             var aw = data.length;
@@ -243,11 +241,11 @@ class Electrode {
             ctx.strokeStyle="#1f77b4";
             ctx.stroke();
             progressbar.count();
-        }).then(() => {
+        
             //Stim Square
             ctx.fillStyle="rgba(255,0,0,0.5)";
             ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
-        }).then(() => {
+        
             //Abscisse
             if(this.solo){
                 ctx.beginPath();
@@ -268,13 +266,15 @@ class Electrode {
                 ctx.textAlign = 'right';
                 ctx.fillText((s+1)*timewidth,w,h/2-20);
             }
-        }).then(() => {
+        
+            //Square Cursor
             if(this.squarecursor){
                 d.append(`<canvas id="cursor-canvas" width="${d.width()}" height="${d.height()}" class="cursor"></canvas>`);
                 cursorCanvas();
             }
-        }).then(() => {
-            if(!$('#spike-layer').is(':checked')){
+        
+            //Spikes
+            if($('#spike-layer').is(':checked')){
                 this.plotSpikes();
             }
         });
