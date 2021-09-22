@@ -200,6 +200,7 @@ class Electrode {
             case("raster"): this.short = "r"; break;
             case("heatmap"): this.short = "h"; break;
             case("spectrum"): this.short = "s"; break;
+            case("stack"): this.short = "st"; break;
         }
     }
 
@@ -209,6 +210,12 @@ class Electrode {
         }
         else if(this.short == "s"){
             this.plotSpectrum();
+        }
+        else if(this.short == "r"){
+            this.plotRaster();
+        }
+        else if(this.short == "st"){
+            this.plotStack();
         }
     }
 
@@ -359,9 +366,84 @@ class Electrode {
         });
     }
 
-    plotFullSampleSpectrum(){
-        this.setTrunc(0,1);
-        this.plotSpectrum();
+    plotRaster(){
+        var stimstart = config.stimstart;
+        var sample_rate = config.samplerate;
+        var timewidth = config.timewidth;
+        var stimstartpos = stimstart%timewidth / timewidth;
+        var stimwidth = $('#stimduration').val() / 1000;
+        var stimendpos = (stimstart%timewidth + stimwidth) / timewidth;
+        var f = $.getJSON(`/electrode/s/${this.number-1}`, (data) => {
+            var d = $(`#${this.graph}`);
+            d.attr('data-e',this.number);
+            d.data('e',this.number);
+            d.html('');
+            var w = d.width();
+            var h = d.height();
+            var tw = timewidth;
+            var th = Math.round((data.length / sample_rate) / tw);
+            var sh = h / th * 0.8;
+    
+            d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+            var canvas = $(`#${this.graph}>canvas`)[0];
+            var ctx = canvas.getContext('2d');
+            
+            //Stim Square
+            ctx.fillStyle="#1F1F1F";
+            ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
+    
+            data.forEach((v,k) => {
+                if(v > 0){
+                    var t = k / sample_rate;
+                    var x = t%tw / tw;
+                    var y = Math.round(t/tw) / th;
+                    ctx.fillStyle=plotColor(x,stimstartpos,stimendpos);
+                    ctx.fillRect(x * w,y * h,1,sh);
+                }
+            });
+            progressbar.count();
+        });
+        abordable.push(f);
+    }
+
+    plotStack(){
+        var timewidth = config.timewidth;
+        var step = $('#stack-width').val();
+        var sample_rate = config.samplerate;
+        var f = $.getJSON(`/electrode/s/${this.number-1}`, (data) => {
+            var tw = timewidth;
+    
+            var histo = new Array(Math.round(timewidth / step)+1).fill(0);
+    
+            data.forEach((v,k) => {
+                if(v > 0){
+                    var t = k / sample_rate;
+                    var x = t%tw / tw;
+                    histo[Math.round(x * timewidth / step)] += 1;
+                }
+            });
+            var d = $(`#${this.graph}`);
+            d.html('');
+            d.show();
+            var w = d.width();
+            var h = d.height();
+        
+            d.append(`<canvas width="${w}" height="${h}"></canvas>`);
+            var canvas = $(`#${this.graph}>canvas`)[0];
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle="#1f77b4";
+        
+            var sw = w / histo.length;
+            var sh = h / Math.max(...histo);
+        
+            histo.forEach((v,k) => {
+                var x = k * sw;
+                ctx.fillRect(x,0,sw,sh * v);
+            });
+        
+            document.getElementById(this.graph).scrollIntoView(true);
+        });
+        abordable.push(f);
     }
 
     setTrunc(xp,wp){
@@ -395,6 +477,17 @@ class Electrode {
             return false;
         }, false);
     }
+}
+
+function plotColor(x,start,end){
+    //console.log(x,start,end);
+    if(x >= start && x < end){
+        col="red";
+    }
+    else{
+        col="#1f77b4";
+    }
+    return col;
 }
 
 function binIndexToFrequency(n,samplerate,samplelength){

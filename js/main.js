@@ -5,9 +5,7 @@ function init(){
     config.fillinputs();
     initGrid();
     updateSlider();
-    $(".graph-el-detail").click(function(){
-        $(this).hide();
-    })
+    bindButtons();
 }
 
 function filenameTitle(){
@@ -68,12 +66,6 @@ function refresh(){
     }
 }
 
-function select_el(){
-    var el = prompt("Electrode number");
-    var mode = $('.tab-active').attr('id');
-    open_el(mode,el);
-}
-
 //Sliders
 function updateSlider(){
     $.getJSON("\duration", (duration) => {
@@ -92,6 +84,8 @@ function initGrid(){
     gridcollect.pushName("heatmap");
     gridcollect.draw();
 }
+
+//To move
 
 var heatmap = Array(256);
 
@@ -142,17 +136,7 @@ function setMicroSlider(){
     updateMicroSlider();
 }
 
-document.addEventListener('keydown', logKey);
 
-function logKey(e){
-    var k = e.key;
-    if(k == "ArrowRight"){
-        microSliderUp();
-    }
-    if(k == "ArrowLeft"){
-        microSliderDown();
-    }
-}
 
 function microSliderUp(){
     var ms = $('#microslider');
@@ -188,108 +172,56 @@ function plotHM(ms){
     }
 }
 
-function plotERaster(graph,electrode,config){
-    var stimstart = config.stimstart;
-    var sample_rate = config.samplerate;
-    var timewidth = config.timewidth;
-    var stimstartpos = stimstart%timewidth / timewidth;
-    var stimwidth = $('#stimduration').val() / 1000;
-    var stimendpos = (stimstart%timewidth + stimwidth) / timewidth;
-    var f = $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
-        var d = $(`#${graph}`);
-        d.attr('data-e',electrode);
-        d.data('e',electrode);
-        d.html('');
-        var w = d.width();
-        var h = d.height();
-        var tw = timewidth;
-        var th = Math.round((data.length / sample_rate) / tw);
-        var sh = h / th * 0.8;
-
-        d.append(`<canvas width="${w}" height="${h}"></canvas>`);
-        var canvas = $(`#${graph}>canvas`)[0];
-        var ctx = canvas.getContext('2d');
-        
-        //Stim Square
-        ctx.fillStyle="#1F1F1F";
-        ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
-
-        data.forEach((v,k) => {
-            if(v > 0){
-                var t = k / sample_rate;
-                var x = t%tw / tw;
-                var y = Math.round(t/tw) / th;
-                ctx.fillStyle=plotColor(x,stimstartpos,stimendpos);
-                ctx.fillRect(x * w,y * h,1,sh);
-            }
-        });
-        progressbar.count();
-    });
-    abordable.push(f);
+//KeyListener
+document.addEventListener('keydown', logKey);
+function logKey(e){
+    var k = e.key;
+    if(k == "ArrowRight"){
+        microSliderUp();
+    }
+    if(k == "ArrowLeft"){
+        microSliderDown();
+    }
 }
 
-function plotColor(x,start,end){
-    //console.log(x,start,end);
-    if(x >= start && x < end){
-        col="red";
-    }
-    else{
-        col="#1f77b4";
-    }
-    return col;
+//Buttons functions
+function bindButtons(){
+    $('#spike-layer').click(refresh);
+    $('#btn-select-el').click(select_el);
+    $('#spectrum-cursor-cb').click(refresh);
+    $('#btn-full-sample').click(fullFrameSpectrum);
+    $('#btn-play-spectrum').click(playSpectrum);
+    $('#g-spectrum-el').click(this,hideTarget);
 }
+
+function select_el(){
+    var mode = $('.tab-active').attr('id');
+    var el = prompt("Electrode number");
+    if(el != null){
+        open_el(mode,el);
+    }
+}
+
+function fullFrameSpectrum(){
+    var number = $(`#g-raw-el`).attr('data-e');
+    var el = new Electrode("g-spectrum-el",number,"spectrum");
+    el.setTrunc(0,1);
+    el.plot();
+}
+
 
 function playSpectrum(){
+    var number = $(`#g-raw-el`).attr('data-e');
+    var el = new Electrode("g-spectrum-el",number,"spectrum");
     var wp = $('#spectrum-cursor-width').val()/100;
     for(var i = 0;i<=100;i++){
         var xp = Number(i/100);
-        setTimeout((a,b)=>{  plotEspectrum(a,b); }, i*50, xp, wp);
+        setTimeout((a,b,c)=>{ a.setTrunc(b,c); a.plot(); }, i*50, el, xp, wp);
     }
 }
 
-function plotEstack(){
-    var timewidth = config.timewidth;
-    var electrode = $("#g-raster-el").data('e');
-    var step = $('#stack-width').val();
-    var sample_rate = config.samplerate;
-    var f = $.getJSON(`/electrode/s/${electrode-1}`, (data) => {
-        var tw = timewidth;
-
-        var histo = new Array(Math.round(timewidth / step)+1).fill(0);
-
-        data.forEach((v,k) => {
-            if(v > 0){
-                var t = k / sample_rate;
-                var x = t%tw / tw;
-                histo[Math.round(x * timewidth / step)] += 1;
-            }
-        });
-        plotHistoStack(histo);
-    });
-    abordable.push(f);
-}
-
-function plotHistoStack(histo){
-    var d = $(`#g-stack-el`);
-    d.html('');
-    d.show();
-    var w = d.width();
-    var h = d.height();
-
-    d.append(`<canvas width="${w}" height="${h}"></canvas>`);
-    var canvas = $(`#g-stack-el>canvas`)[0];
-    var ctx = canvas.getContext('2d');
-    ctx.fillStyle="#1f77b4";
-
-    var sw = w / histo.length;
-    var sh = h / Math.max(...histo);
-
-    histo.forEach((v,k) => {
-        var x = k * sw;
-        ctx.fillRect(x,0,sw,sh * v);
-    });
-
-    document.getElementById("g-stack-el").scrollIntoView(true);
+function hideTarget(ev){
+    $(ev.target).hide();
 }
 
 function infoHM(){

@@ -129,7 +129,7 @@
                         Spikes&nbsp;
                         <input id="spike-layer" class="form-check-input mt-0" type="checkbox" value="">
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="select_el();">Electrode #</button>
+                    <button id="btn-select-el" type="button" class="btn btn-primary">Electrode #</button>
                 </div>
             </div>
         </div>
@@ -164,7 +164,7 @@
                             Top
                         </div>
                         <input id="spectrum-top-freq" type="number" class="form-control form-control-sm" value="5" min="0" max="100">
-                        <button class="btn btn-sm btn-primary" onclick="playSpectrum();"><i class="ri-play-mini-fill"></i> Play</button>
+                        <button id="btn-play-spectrum" class="btn btn-sm btn-primary"><i class="ri-play-mini-fill"></i> Play</button>
                     </div>
                 </div>
             </div>
@@ -181,8 +181,10 @@
             <div id="g-raster-el" class="graph-el" onclick="show('raster')"></div>
             <div class="input-group mb-3">
                 <input type="number" class ="form-control form-control-lg" id="stack-width" value="0.01" min="0" max="1" step="0.005">
-                <button type="button" class="btn btn-lg btn-outline-primary">seconds</button>
-                <button type="button" class="btn btn-lg btn-primary" onclick="plotEstack()">Stack</button>
+                <div class="input-group-text">
+                    secondes
+                </div>
+                <button id="btn-stack" type="button" class="btn btn-primary"><i class="ri-align-bottom"></i> Stack</button>
             </div>
             <div id="g-stack-el" class="graph-el graph-el-detail"></div>
         </div>
