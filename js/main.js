@@ -4,7 +4,7 @@ function init(){
     filenameTitle();
     config.fillinputs();
     initGrid();
-    updateSlider();
+    initSliders();
     bindButtons();
 }
 
@@ -61,6 +61,9 @@ function refresh(){
         if(mode == "raw") el.squarecursor = true;
         el.plot();
     }
+    else if(id == "heatmap"){
+        populateHeatmap();
+    }
     else{
         console.log("Collection Populate",id);
         gridcollect.collection[id].populate();
@@ -68,11 +71,12 @@ function refresh(){
 }
 
 //Sliders
-function updateSlider(){
+function initSliders(){
     $.getJSON("\duration", (duration) => {
         var s = Math.floor(duration / config.timewidth);
         $("#slider").attr('max',s);
     });
+    $('#microslider').attr("max",config.timewidth * config.samplerate);
 }
 
 //Graphics
@@ -85,93 +89,6 @@ function initGrid(){
     gridcollect.pushName("heatmap");
     gridcollect.draw();
 }
-
-//To move
-
-/*var heatmap = Array(256);
-
-function populateHeatmap(){
-    $('#microslider').attr("max",config.timewidth * config.samplerate);
-    setMicroSlider();
-    loadHM();
-}
-
-function loadHM(){
-    progressbar.init(256);
-    var s = $("#slider").val();
-    for(var i = 1; i <= 256;i++){
-        var f = $.ajax({
-            dataType: 'json',
-            type: 'get',
-            url: `/electrode/hm/${i-1}/timeslice/${s}`,
-            beforeSend: function(jqXHR, settings) {
-                jqXHR.electrode = i;
-            }
-        }).done((data, textStatus, jqXHR)=>{
-            heatmap[jqXHR.electrode-1] = data;
-            progressbar.count();
-            showHM();
-        });
-        abordable.push(f);
-    }
-}
-
-function updateMicroSlider(){
-    updateMS();
-    showHM();
-}
-
-function updateMS(){
-    var hmms = $('#heatmap-ms');
-    var ms = $('#microslider').val();
-    var samplerate = config.samplerate;
-    var stimstart = config.stimstart;
-    var timewidth = config.timewidth;
-    var millisec = Number(ms/samplerate*1000).toFixed(2);
-    var away = Number((ms/samplerate-stimstart % timewidth)*1000).toFixed(2);
-    hmms.val(`+${millisec} ms (${(away<0?"":"+") + away})`);
-}
-
-function setMicroSlider(){
-    $('#microslider').val(config.stimstart % config.timewidth * config.samplerate);
-    updateMicroSlider();
-}
-
-
-
-function microSliderUp(){
-    var ms = $('#microslider');
-    var msv = Number(ms.val());
-    ms.val(msv+1);
-    updateMicroSlider();
-}
-
-function microSliderDown(){
-    var ms = $('#microslider');
-    var msv = Number(ms.val());
-    ms.val(msv-1);
-    updateMicroSlider();
-}
-
-function showHM(){
-    if(!heatmap.includes(undefined)){
-        var ms = $('#microslider').val();
-        plotHM(ms);
-    }
-}
-
-function plotHM(ms){
-    for(var i = 1; i <= 256;i++){
-        var v = heatmap[i-1][ms]*20;
-        if(v>255) v=255;
-        if(v<-255) v=-255;
-        var r = 0;
-        var g = 0;
-        if(v>=0) g = v;
-        if(v<0) r = -v;
-        $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);
-    }
-}*/
 
 //KeyListener
 document.addEventListener('keydown', logKey);

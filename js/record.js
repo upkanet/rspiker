@@ -196,6 +196,7 @@ class Electrode {
         this.mode = mode;
         this.solo = solo;
         this.squarecursor = false;
+        this.heatmap = [];
         switch(this.mode){
             case("raw"): this.short = "e"; break;
             case("filtered"): this.short = "f"; break;
@@ -478,6 +479,91 @@ class Electrode {
             el.plot();
             return false;
         }, false);
+    }
+}
+
+
+//Heatmap
+var heatmap = Array(256);
+
+function populateHeatmap(){
+    $('#microslider').attr("max",config.timewidth * config.samplerate);
+    setMicroSlider();
+    loadHM();
+}
+
+function loadHM(){
+    progressbar.init(256);
+    var s = $("#slider").val();
+    for(var i = 1; i <= 256;i++){
+        var f = $.ajax({
+            dataType: 'json',
+            type: 'get',
+            url: `/electrode/hm/${i-1}/timeslice/${s}`,
+            beforeSend: function(jqXHR, settings) {
+                jqXHR.electrode = i;
+            }
+        }).done((data, textStatus, jqXHR)=>{
+            heatmap[jqXHR.electrode-1] = data;
+            progressbar.count();
+            showHM();
+        });
+        abordable.push(f);
+    }
+}
+
+function updateMicroSlider(){
+    updateMS();
+    showHM();
+}
+
+function updateMS(){
+    var hmms = $('#heatmap-ms');
+    var ms = $('#microslider').val();
+    var samplerate = config.samplerate;
+    var stimstart = config.stimstart;
+    var timewidth = config.timewidth;
+    var millisec = Number(ms/samplerate*1000).toFixed(2);
+    var away = Number((ms/samplerate-stimstart % timewidth)*1000).toFixed(2);
+    hmms.val(`+${millisec} ms (${(away<0?"":"+") + away})`);
+}
+
+function setMicroSlider(){
+    $('#microslider').val(config.stimstart % config.timewidth * config.samplerate);
+    updateMicroSlider();
+}
+
+function microSliderUp(){
+    var ms = $('#microslider');
+    var msv = Number(ms.val());
+    ms.val(msv+1);
+    updateMicroSlider();
+}
+
+function microSliderDown(){
+    var ms = $('#microslider');
+    var msv = Number(ms.val());
+    ms.val(msv-1);
+    updateMicroSlider();
+}
+
+function showHM(){
+    if(!heatmap.includes(undefined)){
+        var ms = $('#microslider').val();
+        plotHM(ms);
+    }
+}
+
+function plotHM(ms){
+    for(var i = 1; i <= 256;i++){
+        var v = heatmap[i-1][ms]*20;
+        if(v>255) v=255;
+        if(v<-255) v=-255;
+        var r = 0;
+        var g = 0;
+        if(v>=0) g = v;
+        if(v<0) r = -v;
+        $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);
     }
 }
 
