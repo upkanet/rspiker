@@ -119,7 +119,7 @@ function bindButtons(){
     $('#btn-heatmap-info').click(infoHM);
     $('#btn-config-save').click(saveConfig);
     $('#btn-config-reset').click(resetConfig);
-
+    $('#g-raster-el')[0].addEventListener('contextmenu',customStimStart);
 }
 
 function select_el(){
@@ -173,4 +173,12 @@ function saveConfig(){
 function resetConfig(){
     config.fromserver();
     config.fillinputs();
+}
+
+function customStimStart(e){
+    e.preventDefault();
+    var x = e.offsetX;
+    var w = $('#g-raster-el>canvas')[0].width;
+    config.stimstart = x / w * config.timewidth;
+    refresh();
 }
