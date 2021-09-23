@@ -41,6 +41,12 @@ class Config {
         }).done((start) => {
             this.start = Number(start);
         });
+        $.ajax({
+            url: `/filename`,
+            async: false
+        }).done((filename) => {
+            this.filename = filename;
+        });
     }
 
     fillinputs(){
@@ -53,6 +59,7 @@ class Config {
         $('#stimstart').val(this.stimstart);
         $('#recordstart').val(this.start);
         $('#map_mea').val(this.map_mea);
+        $('#filename').val(this.filename);
     }
 
     save(){

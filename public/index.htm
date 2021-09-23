@@ -102,19 +102,19 @@
             <a class="nav-link active" data-tab="home" onclick="javascript:tshow(this);"><i class="ri-home-line"></i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="raw" onclick="javascript:tshow(this);"><i class="ri-bar-chart-fill"></i></a>
+            <a class="nav-link" data-tab="raw" onclick="javascript:tshow(this);"><i class="ri-bar-chart-fill"></i>Raw&Spectrum</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="filtered" onclick="javascript:tshow(this);"><i class="ri-pulse-line"></i></a>
+            <a class="nav-link" data-tab="filtered" onclick="javascript:tshow(this);"><i class="ri-pulse-line"></i>Filtered</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="raster" onclick="javascript:tshow(this);"><i class="ri-bar-chart-grouped-line"></i></a>
+            <a class="nav-link" data-tab="raster" onclick="javascript:tshow(this);"><i class="ri-bar-chart-grouped-line"></i>Rasterplot</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="heatmap" onclick="javascript:tshow(this);"><i class="ri-grid-fill"></i></a>
+            <a class="nav-link" data-tab="heatmap" onclick="javascript:tshow(this);"><i class="ri-grid-fill"></i>Heatmap</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);"><i class="ri-settings-line"></i></a>
+            <a class="nav-link" data-tab="config" onclick="javascript:tshow(this);"><i class="ri-settings-line"></i>Config</a>
         </li>
     </ul>
     <div class="container">
@@ -266,6 +266,10 @@
                             </div>
                             <div id="file-params" class="accordion-collapse collapse show">
                                 <div class="accordion-body">
+                                    <div class="input-group input-group-sm mb-3">
+                                        <span class="input-group-text">Filename</span>
+                                        <input id="filename" class="form-control" disabled>
+                                    </div>
                                     <div class="input-group input-group-sm mb-3">
                                         <span class="input-group-text">Sample Rate</span>
                                         <input id="samplerate" class="form-control" type="number" value="0" min="0" max="100000" disabled>
