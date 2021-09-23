@@ -129,6 +129,7 @@ impl Fileparam {
 #[derive(Clone)]
 pub struct Electrode {
     pub sample_rate: u64,
+    pub start: f64,
     pub raw: Vec<f64>,
     pub filtered: Vec<f64>,
     pub spikesorted: Vec<f64>,
@@ -143,7 +144,21 @@ impl Electrode {
         let spikesorted: Vec<f64> = Vec::new();
         let heatmapped: Vec<f64> = Vec::new();
         let status: ElectrodeStatus = ElectrodeStatus::new();
-        return Electrode{sample_rate, raw,filtered,spikesorted,heatmapped, status};
+        return Electrode{sample_rate, start: 0.0, raw,filtered,spikesorted,heatmapped, status};
+    }
+
+    pub fn setStart(&mut self, s: f64){
+        self.start = s;
+    }
+
+    fn subraw(&self) -> Vec<f64>{
+        if self.start != 0.0 {
+            let s = (self.start * (self.sample_rate as f64)).floor() as usize;
+            return self.raw[s..].to_vec();
+        }
+        else {
+            return self.raw.to_vec();
+        }
     }
 
     fn threshold(&self) -> f64{
@@ -197,12 +212,13 @@ impl Electrode {
         let dt = 1.0 / self.sample_rate as f64;
         let alpha = rc / (rc + dt);
 
-        let mut fe = self.raw.to_vec();
+        let e = self.subraw();
+        let mut fe = self.subraw();
 
         for k in 1..fe.len() {
-            let x = self.raw[k];
+            let x = e[k];
             let ykm1 = fe[k-1];
-            let xkm1 = self.raw[k-1];
+            let xkm1 = e[k-1];
             let yk = alpha * (ykm1 + x - xkm1);
             fe[k] = yk;
         }
@@ -267,14 +283,15 @@ impl Electrode {
     pub fn slice(&mut self, m: &str, k: usize, k1: usize) -> Vec<f64> {
         let mut e: Vec<f64> = Vec::new();
         let mut k2: usize = 0;
-        if k1 > self.raw.len() {
-            k2 = self.raw.len();
+        let re = self.subraw();
+        if k1 > re.len() {
+            k2 = re.len();
         }
         else{
             k2 = k1;
         }
         if m == "e"{
-            e = self.raw[k..k2].to_vec();
+            e = re[k..k2].to_vec();
         }
         else if m == "f" {
             if !self.status.filtered {
@@ -387,6 +404,12 @@ impl Record {
                 self.electrodes[n as usize].raw.push((((bin[k] as i16) << 8) | bin[k+1] as i16) as f64);
                 k += 2;
             }
+        }
+    }
+
+    pub fn setStart(&mut self, s: f64){
+        for k in 0..self.electrodes.len() {
+            self.electrodes[k].setStart(s);
         }
     }
 
