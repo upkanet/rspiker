@@ -35,6 +35,12 @@ class Config {
         }).done((stimstart) => {
             this.stimstart = Number(stimstart);
         });
+        $.ajax({
+            url: `/start`,
+            async: false
+        }).done((start) => {
+            this.start = Number(start);
+        });
     }
 
     fillinputs(){
@@ -45,6 +51,7 @@ class Config {
         $('#map_mea').val(this.map_mea);
         $('#samplerate').val(this.samplerate);
         $('#stimstart').val(this.stimstart);
+        $('#recordstart').val(this.start);
         $('#map_mea').val(this.map_mea);
     }
 
@@ -55,9 +62,10 @@ class Config {
         new_config.threshold = Number($('#threshold').val());
         new_config.timewidth = Number($('#timewidth').val());
         new_config.stimduration = Number($('#stimduration').val());
+        new_config.start = Number($('#recordstart').val());
         new_config.map_mea = $('#map_mea').val().split(',').map((v)=>{return Number(v)});
 
-        if(new_config.fc != this.fc){
+        if(new_config.fc != this.fc || new_config.start != this.start){
             clearCache("f");
             clearCache("s");
             clearCache("hm");
@@ -66,6 +74,8 @@ class Config {
             clearCache("s");
         }
         console.log(new_config);
+        if(new_config.start != this.start) $.post(`/start/${new_config.start}`);
+        delete new_config.start;
         //Save to server
         $.ajax({
             method: "POST",

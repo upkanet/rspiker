@@ -52,10 +52,18 @@ fn clearcache(m: String) -> String {
     }
 }
 
-#[get("/start/<s>")]
+#[get("/start")]
+fn getstart() -> String{
+    unsafe{
+        let j = json!(R.electrodes[0].start);
+        return j.to_string();
+    }
+}
+
+#[post("/start/<s>")]
 fn setstart(s: f64) -> String{
     unsafe{
-        R.setStart(s);
+        R.set_start(s);
         let j = json!(format!("{}",s));
         return j.to_string();
     }
@@ -156,7 +164,7 @@ async fn main() -> Result<(), rocket::Error>{
         .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
             webbrowser::open("http://localhost:8000/").unwrap();
         })))
-        .mount("/", routes![index,favicon,js,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,setstart,stimstart,saveconfig])
+        .mount("/", routes![index,favicon,js,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,setstart,getstart,stimstart,saveconfig])
         .launch()
         .await
 }

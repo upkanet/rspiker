@@ -147,8 +147,9 @@ impl Electrode {
         return Electrode{sample_rate, start: 0.0, raw,filtered,spikesorted,heatmapped, status};
     }
 
-    pub fn setStart(&mut self, s: f64){
+    pub fn set_start(&mut self, s: f64){
         self.start = s;
+        self.status.reset();
     }
 
     fn subraw(&self) -> Vec<f64>{
@@ -347,6 +348,12 @@ impl ElectrodeStatus {
     pub const fn new() -> ElectrodeStatus{
         ElectrodeStatus{ filtered: false, spikesorted: false, heatmapped: false}
     }
+
+    pub fn reset(&mut self){
+        self.filtered = false;
+        self.spikesorted = false;
+        self.heatmapped = false;
+    }
 }
 
 #[derive(Clone)]
@@ -407,9 +414,9 @@ impl Record {
         }
     }
 
-    pub fn setStart(&mut self, s: f64){
+    pub fn set_start(&mut self, s: f64){
         for k in 0..self.electrodes.len() {
-            self.electrodes[k].setStart(s);
+            self.electrodes[k].set_start(s);
         }
     }
 
@@ -445,7 +452,7 @@ impl Record {
     }
 
     pub fn stimstart(&self, n:usize) -> f64 {
-        let e = &self.electrodes[n].raw;
+        let e = &self.electrodes[n].subraw();
         let mut stimstart = 0;
         for k in 0..e.len(){
             if e[k] < -250.0{
