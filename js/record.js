@@ -65,7 +65,7 @@ class Config {
         new_config.start = Number($('#recordstart').val());
         new_config.map_mea = $('#map_mea').val().split(',').map((v)=>{return Number(v)});
 
-        if(new_config.fc != this.fc || new_config.start != this.start){
+        if(new_config.fc != this.fc){
             clearCache("f");
             clearCache("s");
             clearCache("hm");

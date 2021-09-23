@@ -120,6 +120,7 @@ function bindButtons(){
     $('#btn-config-save').click(saveConfig);
     $('#btn-config-reset').click(resetConfig);
     $('#g-raster-el')[0].addEventListener('contextmenu',customStimStart);
+    $('#btn-center-record-start').click(centerRecordStart);
 }
 
 function select_el(){
@@ -181,4 +182,11 @@ function customStimStart(e){
     var w = $('#g-raster-el>canvas')[0].width;
     config.stimstart = x / w * config.timewidth;
     refresh();
+}
+
+function centerRecordStart(){
+    var tw = config.timewidth;
+    var ss = config.stimstart;
+    var c = tw / 2;
+    $('#recordstart').val(ss-c);
 }
