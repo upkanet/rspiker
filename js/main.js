@@ -121,6 +121,7 @@ function bindButtons(){
     $('#btn-config-reset').click(resetConfig);
     $('#g-raster-el')[0].addEventListener('contextmenu',customStimStart);
     $('#btn-center-record-start').click(centerRecordStart);
+    $('#microslider').change(updateMicroSlider);
 }
 
 function select_el(){
