@@ -268,7 +268,7 @@ class Electrode {
             data.forEach((v,k) => {
                 var x = k / aw;
                 var y = (v - abot) / ah;
-                ctx.lineTo(x * w,h*(1-y)*z);
+                ctx.lineTo(x * w,h*(1-y*z));
             });
             ctx.strokeStyle="#1f77b4";
             ctx.stroke();

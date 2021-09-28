@@ -118,7 +118,7 @@ function logKey(e){
 //Wheel
 function zoom(e){
     e.preventDefault();
-    zoomScale(0.05*e.deltaY/100);
+    zoomScale(-0.05*e.deltaY/100);
     refresh();
 }
 
