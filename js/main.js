@@ -90,6 +90,15 @@ function initGrid(){
     gridcollect.draw();
 }
 
+//Zoom
+function zoomReset(){
+    $('#zoomscale').val(1);
+}
+
+function zoomScale(s){
+    $('#zoomscale').val((Number($('#zoomscale').val())+s).toFixed(2));
+}
+
 //KeyListener
 document.addEventListener('keydown', logKey);
 function logKey(e){
@@ -100,6 +109,17 @@ function logKey(e){
     if(k == "ArrowLeft"){
         microSliderDown();
     }
+    if(k == '0'){
+        zoomReset();
+        refresh();
+    }
+}
+
+//Wheel
+function zoom(e){
+    e.preventDefault();
+    zoomScale(0.05*e.deltaY/100);
+    refresh();
 }
 
 //Buttons functions

@@ -245,6 +245,7 @@ class Electrode {
         var stimstartpos = stimstart%timewidth / timewidth;
         var stimwidth = $('#stimduration').val() / 1000;
         var stimendpos = (stimstart%timewidth + stimwidth) / timewidth;
+        var z = Number($('#zoomscale').val());
         var s = $("#slider").val();
         var d = $(`#${this.graph}`);
         var w = d.width();
@@ -267,7 +268,7 @@ class Electrode {
             data.forEach((v,k) => {
                 var x = k / aw;
                 var y = (v - abot) / ah;
-                ctx.lineTo(x * w,h*(1-y));
+                ctx.lineTo(x * w,h*(1-y)*z);
             });
             ctx.strokeStyle="#1f77b4";
             ctx.stroke();
@@ -296,6 +297,11 @@ class Electrode {
                 ctx.fillText((s+0.5)*timewidth,w/2,h/2-20);
                 ctx.textAlign = 'right';
                 ctx.fillText((s+1)*timewidth,w,h/2-20);
+            }
+
+            //Zoom
+            if(this.solo){
+                document.getElementById(this.graph).addEventListener('wheel', zoom);
             }
         
             //Square Cursor
