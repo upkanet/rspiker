@@ -129,21 +129,22 @@
     <!-- Slider top menu -->
     <div class="container">
         <div class="row">
-            <div class="col-9">
+            <div class="col-7">
                 <input id="slider" type="range" class="form-range" min="0" max="5" value="0">
             </div>
-            <div class="col-3">
+            <div class="col-5">
                 <div class="input-group">
                     <input id="time" type="text" class="form-control form-control-sm" value="0.0 sec" disabled>
                     <div class="input-group-text">
                         Spikes&nbsp;
                         <input id="spike-layer" class="form-check-input mt-0" type="checkbox" value="">
                     </div>
+                    <button id="btn-reset-zoom" type="button" class="btn btn-info">Reset <i class="ri-zoom-in-fill"></i></button>
                     <button id="btn-select-el" type="button" class="btn btn-primary">Electrode #</button>
                 </div>
             </div>
         </div>
-        <input id="zoomscale" type="hidden" value="1">
+        <input id="zoomframe" type="hidden" value='{}'>
     </div>
     <!-- Home Tab-->
     <div class="tab tab-active" id="home">

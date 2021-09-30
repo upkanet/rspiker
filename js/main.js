@@ -90,15 +90,6 @@ function initGrid(){
     gridcollect.draw();
 }
 
-//Zoom
-function zoomReset(){
-    $('#zoomscale').val(1);
-}
-
-function zoomScale(s){
-    $('#zoomscale').val((Number($('#zoomscale').val())+s).toFixed(2));
-}
-
 //KeyListener
 document.addEventListener('keydown', logKey);
 function logKey(e){
@@ -113,13 +104,6 @@ function logKey(e){
         zoomReset();
         refresh();
     }
-}
-
-//Wheel
-function zoom(e){
-    e.preventDefault();
-    zoomScale(-0.05*e.deltaY/100);
-    refresh();
 }
 
 //Buttons functions
@@ -145,6 +129,7 @@ function bindButtons(){
     $('.close-btn').click(closeView);
     $('.graph-el').mousedown(zoomMouseDown);
     $('.graph-el').mouseup(zoomMouseUp);
+    $('#btn-reset-zoom').click(btnZoomReset);
 }
 
 function select_el(){
@@ -221,15 +206,28 @@ function closeView(e){
     show(p);
 }
 
-var zoomFrame = {x0: 0, y0: 0, x1: 0, y1:0};
+var tempZoomFrame = {};
 
 function zoomMouseDown(e){
-    zoomFrame.x0 = e.offsetX;
-    zoomFrame.y0 = e.offsetY;
+    if(e.which == 1){
+        tempZoomFrame = {x0:0,y0:0,x1:0,y1:0,active:false};
+        tempZoomFrame.x0 = e.offsetX;
+        tempZoomFrame.y0 = e.offsetY;
+    }
 }
 
 function zoomMouseUp(e){
-    zoomFrame.x1 = e.offsetX;
-    zoomFrame.y1 = e.offsetY;
-    console.log(zoomFrame);
+    if(e.which == 1){
+        tempZoomFrame.x1 = e.offsetX;
+        tempZoomFrame.y1 = e.offsetY;
+        if(Math.abs(tempZoomFrame.x1 - tempZoomFrame.x0) > 10 && Math.abs(tempZoomFrame.y1 - tempZoomFrame.y0) > 10){
+            setZoomFrame(tempZoomFrame);
+            refresh();
+        }
+    }
+}
+
+function btnZoomReset(){
+    zoomReset();
+    refresh();
 }
