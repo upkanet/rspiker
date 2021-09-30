@@ -143,6 +143,8 @@ function bindButtons(){
     $('#btn-center-record-start').click(centerRecordStart);
     $('#microslider').change(updateMicroSlider);
     $('.close-btn').click(closeView);
+    $('.graph-el').mousedown(zoomMouseDown);
+    $('.graph-el').mouseup(zoomMouseUp);
 }
 
 function select_el(){
@@ -217,4 +219,17 @@ function closeView(e){
     console.log("Close View");
     var p = $(e.currentTarget).data('parent');
     show(p);
+}
+
+var zoomFrame = {x0: 0, y0: 0, x1: 0, y1:0};
+
+function zoomMouseDown(e){
+    zoomFrame.x0 = e.offsetX;
+    zoomFrame.y0 = e.offsetY;
+}
+
+function zoomMouseUp(e){
+    zoomFrame.x1 = e.offsetX;
+    zoomFrame.y1 = e.offsetY;
+    console.log(zoomFrame);
 }
