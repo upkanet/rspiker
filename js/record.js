@@ -276,11 +276,13 @@ class Electrode {
             progressbar.count();
         
             //Stim Square
-            ctx.fillStyle="rgba(255,0,0,0.5)";
-            ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
+            if(!zf.active){
+                ctx.fillStyle="rgba(255,0,0,0.5)";
+                ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
+            }
         
             //Abscisse
-            if(this.solo){
+            if(this.solo && !zf.active){
                 ctx.beginPath();
                 ctx.moveTo(0,h/2);
                 ctx.lineTo(w,h/2);
