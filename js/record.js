@@ -250,7 +250,7 @@ class Electrode {
         var d = $(`#${this.graph}`);
         var w = d.width();
         var h = d.height();
-        d.html('');
+        $(`#${this.graph}>canvas`).remove();
         d.append(`<canvas width="${w}" height="${h}"></canvas>`);
         var canvas = $(`#${this.graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
@@ -403,7 +403,7 @@ class Electrode {
             var d = $(`#${this.graph}`);
             d.attr('data-e',this.number);
             d.data('e',this.number);
-            d.html('');
+            $(`#${this.graph}>canvas`).remove();
             var w = d.width();
             var h = d.height();
             var tw = timewidth;

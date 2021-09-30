@@ -142,6 +142,7 @@ function bindButtons(){
     $('#g-raster-el')[0].addEventListener('contextmenu',customStimStart);
     $('#btn-center-record-start').click(centerRecordStart);
     $('#microslider').change(updateMicroSlider);
+    $('.close-btn').click(closeView);
 }
 
 function select_el(){
@@ -210,4 +211,10 @@ function centerRecordStart(){
     var ss = config.stimstart;
     var c = tw / 2;
     $('#recordstart').val(ss-c);
+}
+
+function closeView(e){
+    console.log("Close View");
+    var p = $(e.currentTarget).data('parent');
+    show(p);
 }
