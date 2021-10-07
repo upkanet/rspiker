@@ -136,10 +136,10 @@ async fn index() -> Option<NamedFile> {
 
 fn prepare() {
     let params = DialogParams {
-        title: "Axorus Rspiker - Select a .raw file",
-        file_types: vec![("MCD raw", "*.raw")],
+        title: "Axorus Rspiker - Select a .mcd file",
+        file_types: vec![("MCD file", "*.mcd")],
         file_type_index: 1,
-        default_extension: "raw",
+        default_extension: "mcd",
         ..Default::default()
     };
     let dialog_result = wfd::open_dialog(params).expect("Open Dialog Error");
@@ -152,6 +152,7 @@ fn prepare() {
         R.load();
         println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     }
+
 }
 
 #[rocket::main]

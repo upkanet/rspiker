@@ -45,9 +45,6 @@ static mut CONFIG: Config = Config::new();
 pub struct Fileparam {
     pub filepath: String,
     pub sample_rate: u64,
-    pub eoh: u64,
-    pub datastart: u64,
-    pub header: String,
     pub adczero: u64,
     pub el: f64,
     pub streams: u64
@@ -56,11 +53,10 @@ pub struct Fileparam {
 impl Fileparam {
     pub const fn empty() -> Fileparam{
         let filepath: String = String::new();
-        let header: String = String::new();
-        return Fileparam{filepath, sample_rate: 0, eoh: 0, datastart: 0, header, adczero: 0, el: 0.0, streams: 0};
+        return Fileparam{filepath, sample_rate: 0, adczero: 0, el: 0.0, streams: 0};
     }
 
-    pub fn load(&mut self, filepath: String){
+    /*pub fn load(&mut self, filepath: String){
         self.filepath = filepath;
         self.findeoh();
         self.loadheader();
@@ -126,7 +122,7 @@ impl Fileparam {
         };
         let val = l[pos..l.len()-1].to_string();
         return val;
-    }
+    }*/
 }
 
 #[derive(Clone)]
@@ -373,7 +369,7 @@ impl Record {
         unsafe {
             CONFIG = Config::get();
         }
-        let mcd = MCDFile::new(filepath.to_string());
+        let mut mcd = MCDFile::new(filepath.to_string());
         let electrodes: Vec<Electrode> = Vec::new();
         let fileparam: Fileparam = Fileparam::empty();
         return Record{ filepath, mcd, fileparam, duration: 0.0, electrodes };
@@ -388,6 +384,39 @@ impl Record {
     }
 
     pub fn load(&mut self){
+        self.mcd.load_file();
+        self.loadfileparam();
+        self.loaddata();
+    }
+
+    fn loadfileparam(&mut self){
+        self.fileparam.filepath = self.filepath.to_string();
+        self.fileparam.sample_rate = self.mcd.sampling_rate() as u64;
+        //Fileparam ADC zero
+        //Fileparam El
+        self.fileparam.streams = self.mcd.channel_count() as u64;
+    }
+
+    fn loaddata(&mut self){
+        let bin = self.mcd.read();
+        self.electrodes = vec![Electrode::new(self.fileparam.sample_rate);self.fileparam.streams as usize];
+        /*let mut k = 0;
+        while k+1+2*256 < bin.len() {
+            for n in 0..self.fileparam.streams {
+                self.electrodes[n as usize].raw.push((((bin[k] as i16) << 8) | bin[k+1] as i16) as f64);
+                k += 2;
+            }
+        }*/
+        let mut k = 0;
+        while k < bin.len() {
+            for n in 0..self.fileparam.streams {
+                self.electrodes[n as usize].raw.push(bin[k] as f64);
+                k += 1;
+            }
+        }
+    }
+
+    /*pub fn load(&mut self){
         self.loadfileparam();
         self.loaddata();
     }
@@ -416,7 +445,7 @@ impl Record {
                 k += 2;
             }
         }
-    }
+    }*/
 
     pub fn set_start(&mut self, s: f64){
         for k in 0..self.electrodes.len() {
