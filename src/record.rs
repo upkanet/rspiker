@@ -12,6 +12,9 @@ use serde::{Serialize,Deserialize};
 
 use realfft::RealFftPlanner;
 
+mod mcd;
+use mcd::{MCDFile};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub fc: u64,
@@ -359,6 +362,7 @@ impl ElectrodeStatus {
 #[derive(Clone)]
 pub struct Record {
     pub filepath: String,
+    pub mcd: MCDFile,
     pub fileparam: Fileparam,
     pub duration: f64,
     pub electrodes: Vec<Electrode>
@@ -369,19 +373,19 @@ impl Record {
         unsafe {
             CONFIG = Config::get();
         }
+        let mcd = MCDFile::new(filepath.to_string());
         let electrodes: Vec<Electrode> = Vec::new();
         let fileparam: Fileparam = Fileparam::empty();
-        return Record{ filepath, fileparam, duration: 0.0, electrodes };
+        return Record{ filepath, mcd, fileparam, duration: 0.0, electrodes };
     }
 
     pub const fn empty() -> Record {
         let filepath: String = String::new();
+        let mcd = MCDFile::empty();
         let fileparam: Fileparam = Fileparam::empty();
         let electrodes: Vec<Electrode> = Vec::new();
-        return Record{ filepath, fileparam, duration: 0.0, electrodes };
+        return Record{ filepath, mcd, fileparam, duration: 0.0, electrodes };
     }
-
-    
 
     pub fn load(&mut self){
         self.loadfileparam();
