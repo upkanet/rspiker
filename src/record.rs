@@ -414,6 +414,7 @@ impl Record {
                 k += 1;
             }
         }
+        self.duration = self.mcd.time_span();
     }
 
     /*pub fn load(&mut self){

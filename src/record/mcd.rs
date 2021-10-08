@@ -42,7 +42,6 @@ impl MCDFile {
         unsafe{
             let load_file: Symbol<unsafe extern "C" fn(*mut c_void, *const c_char) -> u32> = MCDLIB[0].get(b"mcstream_load_file").expect("Failed to load function");
             load_file(self.file,c_filename);
-            println!("file loaded");
             self.load_stream();
         }
     }
@@ -104,7 +103,6 @@ impl MCDFile {
             let bsize = samples * 256;
             let mut buffer = vec!(0;bsize);
             let mut pbuffer = buffer.as_mut_ptr();
-            println!("Samples {:?}",samples);
             raw_read(self.file,1,0,samples,pbuffer,bsize);
             return buffer;
         }
