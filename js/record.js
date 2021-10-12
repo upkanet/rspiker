@@ -545,7 +545,10 @@ function updateMS(){
     var timewidth = config.timewidth;
     var millisec = Number(ms/samplerate*1000).toFixed(2);
     var away = Number((ms/samplerate-stimstart % timewidth)*1000).toFixed(2);
-    hmms.val(`+${millisec} ms (${(away<0?"":"+") + away})`);
+    hmms.val(`${(away<0?"":"+") + away} ms`);
+    $('#microslider-output').html(millisec);
+    console.log(millisec,timewidth);
+    $('#microslider-output').css('left',($('#microslider').width() - 50) * millisec/1000/timewidth);
 }
 
 function microSliderStimStart(){

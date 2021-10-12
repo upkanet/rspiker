@@ -47,6 +47,8 @@ function refresh(){
     //Slider
     var pos = Number($("#slider").val()*config.timewidth).toFixed(1);
     $('#time').val(`${pos} sec`);
+    $('#slider-output').html(pos);
+    $('#slider-output').css('left',10 + (Number($("#slider").val()) / Number($("#slider").attr('max'))) * (Number($("#slider").width()) - 70));
 
     var id = $('.tab-active').first().attr('id');
     if(id == "home" || id == "config"){

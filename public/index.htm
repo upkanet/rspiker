@@ -44,6 +44,41 @@
         margin-top: 10px;
     }
 
+    #slider:after{
+        content: 'sec';
+        margin-left: 20px;
+    }
+
+    #slider-output{
+        pointer-events: none;
+        position: absolute;
+        left: 10px;
+        background-color: #375a7f;
+        border-radius: 25%;
+        padding:5px;
+        top:5px;
+    }
+
+    #microslider{
+        margin-top:10px;
+    }
+
+    #microslider:after{
+        content: 'ms';
+        margin-left: 10px;
+    }
+
+    #microslider-output{
+        pointer-events: none;
+        position: absolute;
+        left: 10px;
+        background-color: #375a7f;
+        border-radius: 25%;
+        padding:5px;
+        top:5px;
+    }
+
+
     #data-progress{
         background-color: #375a7f;
         height:5px;
@@ -129,12 +164,13 @@
     <!-- Slider top menu -->
     <div class="container">
         <div class="row">
-            <div class="col-7">
+            <div class="col-7" style="position:relative;">
                 <input id="slider" type="range" class="form-range" min="0" max="5" value="0">
+                <output id="slider-output">0.0</output>
             </div>
+            <input id="time" type="hidden" class="form-control form-control-sm" value="0.0 sec" disabled>
             <div class="col-5">
                 <div class="input-group">
-                    <input id="time" type="text" class="form-control form-control-sm" value="0.0 sec" disabled>
                     <div class="input-group-text">
                         Spikes&nbsp;
                         <input id="spike-layer" class="form-check-input mt-0" type="checkbox" value="">
@@ -218,13 +254,14 @@
     <div class="tab" id="heatmap">
         <div class="container">
             <div class="row">
-                <div class="col-8">
+                <div class="col-9" style="position: relative;">
                     <input id="microslider" type="range" class="form-range" min="0" max="5" value="0">
+                    <output id="microslider-output">0.0</output>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <div class="input-group">
                         <button id="btn-ms-down" type="button" class="btn btn-secondary">&lt;</button>
-                        <button id="btn-ms-stimstart" type="button" class="btn btn-secondary">Stim Start</button>
+                        <button id="btn-ms-stimstart" type="button" class="btn btn-secondary"><i class="ri-split-cells-horizontal"></i></button>
                         <input id="heatmap-ms" type="text" class="form-control form-control-sm" disabled>
                         <button id="btn-ms-up" type="button" class="btn btn-secondary">&gt;</button>
                         <button id="btn-heatmap-info" type="button" class="btn btn-primary"><i class="ri-question-fill"></i></button>
