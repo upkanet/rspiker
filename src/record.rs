@@ -489,7 +489,7 @@ impl Record {
         let e = &self.electrodes[n].subraw();
         let mut stimstart = 0;
         for k in 0..e.len(){
-            if e[k] < -250.0{
+            if e[k] > 60000.0{
                 stimstart = k;
                 break;
             }
