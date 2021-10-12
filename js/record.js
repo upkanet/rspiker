@@ -584,9 +584,12 @@ function plotHM(ms){
         if(v<-255) v=-255;
         var r = 0;
         var g = 0;
-        if(v>=0) g = v;
+        /*if(v>=0) g = v;
         if(v<0) r = -v;
-        $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);
+        $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);*/
+        if(v>=0) g = 255;
+        if(v<0) r = 255;
+        $(`#g-heatmap-${i}`).css("background-color",`rgba(${r} ${g} 0 / ${Math.abs(v)/255 * 100}%)`);
     }
 }
 
