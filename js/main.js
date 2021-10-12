@@ -130,6 +130,7 @@ function bindButtons(){
     $('#microslider').change(updateMicroSlider);
     $('.close-btn').click(closeView);
     $('.graph-el').mousedown(zoomMouseDown);
+    $('.graph-el').mousemove(zoomMouseMove);
     $('.graph-el').mouseup(zoomMouseUp);
     $('#btn-reset-zoom').click(btnZoomReset);
 }
@@ -209,23 +210,45 @@ function closeView(e){
 }
 
 var tempZoomFrame = {};
+var tempZoomSelector = {};
 
 function zoomMouseDown(e){
     if(e.which == 1){
+        //Zoom
         tempZoomFrame = {x0:0,y0:0,x1:0,y1:0,active:false};
         tempZoomFrame.x0 = e.offsetX;
         tempZoomFrame.y0 = e.offsetY;
+
+        //Selector
+        $('#cursor-select').show();
+        tempZoomSelector.x = e.clientX;
+        tempZoomSelector.y = e.clientY;
+        $('#cursor-select').css("left",e.clientX);
+        $('#cursor-select').css("top",e.clientY);
+        $('#cursor-select').css("width",0);
+        $('#cursor-select').css("height",0);
+    }
+}
+
+function zoomMouseMove(e){
+    if(e.which == 1){
+        $('#cursor-select').css("width",e.clientX - tempZoomSelector.x);
+        $('#cursor-select').css("height",e.clientY - tempZoomSelector.y);
     }
 }
 
 function zoomMouseUp(e){
     if(e.which == 1){
+        //Zoom
         tempZoomFrame.x1 = e.offsetX;
         tempZoomFrame.y1 = e.offsetY;
         if(Math.abs(tempZoomFrame.x1 - tempZoomFrame.x0) > 10 && Math.abs(tempZoomFrame.y1 - tempZoomFrame.y0) > 10){
             setZoomFrame(tempZoomFrame);
             refresh();
         }
+
+        //Selector
+        $('#cursor-select').hide();
     }
 }
 
