@@ -10,4 +10,4 @@ cp -R public release/public
 cp target/debug/rspiker.exe release/rspiker.exe
 cp config.json release/config.json
 cp mcstream_wrapper.dll release/mcstream_wrapper.dll
-Compress-Archive -Path release\* -DestinationPath release-$version.zip
+Compress-Archive -Path release\* -DestinationPath rspiker-release-$version.zip
