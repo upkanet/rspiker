@@ -139,7 +139,9 @@ function select_el(){
     var mode = $('.tab-active').attr('id');
     var el = prompt("Electrode number");
     if(el != null){
-        open_el(mode,el);
+        //open_el(mode,el);
+        $(`[id^=g-${mode}-]`).css('border','');
+        $(`#g-${mode}-${el}`).css('border','1px solid green');
     }
 }
 
