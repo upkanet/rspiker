@@ -1,6 +1,6 @@
 extern crate libloading;
 extern crate libc;
-use std::ffi::{c_void,CString};
+use std::ffi::{c_void,CString,OsString};
 use std::os::raw::{c_char,c_double};
 use libc::{size_t,time_t,c_ushort};
 use libloading::{Library,Symbol};
@@ -36,9 +36,7 @@ impl MCDFile {
     }
 
     pub fn load_file(&mut self){
-        let filename = self.filename.as_str();
-        let filename_c_str = CString::new(filename).unwrap();
-        let c_filename: *const c_char = filename_c_str.as_ptr() as *const c_char;
+        let c_filename: *const c_char = self.filename.as_str().as_ptr() as *const c_char;
         unsafe{
             let load_file: Symbol<unsafe extern "C" fn(*mut c_void, *const c_char) -> u32> = MCDLIB[0].get(b"mcstream_load_file").expect("Failed to load function");
             load_file(self.file,c_filename);
