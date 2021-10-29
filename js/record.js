@@ -261,18 +261,22 @@ class Electrode {
             var ah = atop - abot;
             var zf = getZoomFrame();
 
+            //Transform context for graph XY
+            ctx.transform(1, 0, 0, -1, 0, canvas.height);
+
             //Data
             ctx.beginPath();
-            ctx.moveTo(0,h*(1-(data[0] - abot) / ah));
+            ctx.moveTo(0,h*(data[0] - abot) / ah);
     
             data.forEach((v,k) => {
                 var x = k / aw;
                 var y = (v - abot) / ah;
-                var zpoint = zoomed(x * w,h*(1-y),w,h,zf);
+                var zpoint = zoomed(x * w,h*y,w,h,zf);
                 ctx.lineTo(zpoint.x,zpoint.y);
             });
             ctx.strokeStyle="#1f77b4";
             ctx.stroke();
+            ctx.transform(1, 0, 0, -1, 0, canvas.height);
             progressbar.count();
         
             //Stim Square
@@ -415,6 +419,9 @@ class Electrode {
             //Stim Square
             ctx.fillStyle="#1F1F1F";
             ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
+
+            //Graph XY
+            ctx.transform(1, 0, 0, -1, 0, canvas.height);
     
             data.forEach((v,k) => {
                 if(v > 0){
@@ -460,6 +467,9 @@ class Electrode {
             var sw = w / histo.length;
             var sh = h / Math.max(...histo);
         
+            //Graph XY
+            ctx.transform(1, 0, 0, -1, 0, canvas.height);
+            
             histo.forEach((v,k) => {
                 var x = k * sw;
                 ctx.fillRect(x,0,sw,sh * v);
