@@ -250,10 +250,10 @@ function zoomMouseUp(e){
         //Zoom
         tempZoomFrame.x1 = (e.offsetX / w) * (zf.x1 - zf.x0) + zf.x0;
         tempZoomFrame.y1 = (1 - (e.offsetY / h)) * (zf.y1 - zf.y0) + zf.y0;
-        //if(Math.abs(tempZoomFrame.x1 - tempZoomFrame.x0) > 0.001 && Math.abs(tempZoomFrame.y1 - tempZoomFrame.y0) > 0.001){
+        if(Math.abs(e.clientX - tempZoomSelector.x) > 10 && Math.abs(e.clientY - tempZoomSelector.y) > 10){
             setZoomFrame(tempZoomFrame);
             refresh();
-        //}
+        }
 
         //Selector
         $('#cursor-select').hide();
