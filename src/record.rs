@@ -131,6 +131,7 @@ impl Fileparam {
 pub struct Electrode {
     pub sample_rate: u64,
     pub start: f64,
+    pub stimstart: f64,
     pub raw: Vec<f64>,
     pub filtered: Vec<f64>,
     pub spikesorted: Vec<f64>,
@@ -145,7 +146,7 @@ impl Electrode {
         let spikesorted: Vec<f64> = Vec::new();
         let heatmapped: Vec<f64> = Vec::new();
         let status: ElectrodeStatus = ElectrodeStatus::new();
-        return Electrode{sample_rate, start: 0.0, raw,filtered,spikesorted,heatmapped, status};
+        return Electrode{sample_rate, start: 0.0, stimstart: 0.0, raw,filtered,spikesorted,heatmapped, status};
     }
 
     pub fn set_start(&mut self, s: f64){
@@ -224,8 +225,9 @@ impl Electrode {
         let fe = self.filtered.to_vec();
         let mut se = fe.to_vec();
 
-        let med = median(&fe);
-        let mad = mad(&fe);
+        let kstart = (self.stimstart * self.sample_rate as f64) as usize;
+        let med = median(&fe[0..kstart].to_vec());
+        let mad = mad(&fe[0..kstart].to_vec());
 
         se[0] = 0.0;
 
@@ -325,6 +327,18 @@ impl Electrode {
 
         return r;
     }
+
+    pub fn stimstart(&self) -> f64 {
+        let e = &self.subraw();
+        let mut stimstart = 0;
+        for k in 0..e.len(){
+            if e[k] > 60000.0{
+                stimstart = k;
+                break;
+            }
+        }
+        return stimstart as f64 / self.sample_rate as f64;
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -406,6 +420,7 @@ impl Record {
             }
         }
         self.duration = self.mcd.time_span();
+        self.stimstart();
     }
 
     /*pub fn load(&mut self){
@@ -476,16 +491,12 @@ impl Record {
         return self.electrodes[n].slice(m,k,k1);
     }
 
-    pub fn stimstart(&self, n:usize) -> f64 {
-        let e = &self.electrodes[n].subraw();
-        let mut stimstart = 0;
-        for k in 0..e.len(){
-            if e[k] > 60000.0{
-                stimstart = k;
-                break;
-            }
+    pub fn stimstart(&mut self) -> f64 {
+        let sstart = self.electrodes[126].stimstart();
+        for i in 0..self.electrodes.len() {
+            self.electrodes[i].stimstart = sstart;
         }
-        return stimstart as f64 / self.fileparam.sample_rate as f64;
+        return sstart;
     }
 
     pub fn clearcache(&mut self,m: &str){

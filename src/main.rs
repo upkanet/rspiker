@@ -106,10 +106,10 @@ fn duration() -> String {
     }
 }
 
-#[get("/stimstart/<n>")]
-fn stimstart(n: usize) -> String {
+#[get("/stimstart")]
+fn stimstart() -> String {
     unsafe{
-        return R.stimstart(n).to_string();
+        return R.stimstart().to_string();
     }
 }
 

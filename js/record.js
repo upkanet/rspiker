@@ -28,9 +28,8 @@ class Config {
         }).done((samplerate) => {
             this.samplerate = Number(samplerate);
         });
-        var electrode = 127;
         $.ajax({
-            url: `/stimstart/${electrode-1}`,
+            url: `/stimstart`,
             async: false
         }).done((stimstart) => {
             this.stimstart = Number(stimstart);
@@ -327,6 +326,7 @@ class Electrode {
             var w = d.width();
             var h = d.height();
             var aw = data.length;
+            var zf = getZoomFrame();
     
             var canvas = $(`#${this.graph}>canvas`)[0];
             var ctx = canvas.getContext('2d');
@@ -336,7 +336,8 @@ class Electrode {
                 if(v > 0){
                     var x = k / aw;
                     var y = 0.5;
-                    ctx.fillRect(x*w,y*h,1,h/5);
+                    var zpoint = zoomed(x * w,0,w,h,zf);
+                    ctx.fillRect(zpoint.x,y * h,1,h/5);
                 }
             });
         });
