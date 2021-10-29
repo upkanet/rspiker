@@ -216,10 +216,11 @@ var tempZoomSelector = {};
 
 function zoomMouseDown(e){
     if(e.which == 1){
+        var h = $(e.currentTarget).height();
         //Zoom
         tempZoomFrame = {x0:0,y0:0,x1:0,y1:0,active:false};
         tempZoomFrame.x0 = e.offsetX;
-        tempZoomFrame.y0 = e.offsetY;
+        tempZoomFrame.y0 = h - e.offsetY;
 
         //Selector
         $('#cursor-select').show();
@@ -241,9 +242,10 @@ function zoomMouseMove(e){
 
 function zoomMouseUp(e){
     if(e.which == 1){
+        var h = $(e.currentTarget).height();
         //Zoom
         tempZoomFrame.x1 = e.offsetX;
-        tempZoomFrame.y1 = e.offsetY;
+        tempZoomFrame.y1 = h - e.offsetY;
         if(Math.abs(tempZoomFrame.x1 - tempZoomFrame.x0) > 10 && Math.abs(tempZoomFrame.y1 - tempZoomFrame.y0) > 10){
             setZoomFrame(tempZoomFrame);
             refresh();
