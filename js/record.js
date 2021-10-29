@@ -654,8 +654,7 @@ function setZoomFrame(zf){
 }
 
 function zoomReset(){
-    var zf = getZoomFrame();
-    zf.active = false;
+    var zf = {x0:0,y0:0,x1:1,y1:1,active:false};
     $('#zoomframe').val(JSON.stringify(zf));
 }
 
@@ -666,8 +665,8 @@ function zoomed(x,y,w,h,zf){
         p.y = y;
     }
     else{
-        p.x = (x - zf.x0) / (zf.x1 - zf.x0) * w;
-        p.y = (y - zf.y0) / (zf.y1 - zf.y0) * h;
+        p.x = (x/w - zf.x0) / (zf.x1 - zf.x0) * w;
+        p.y = (y/h - zf.y0) / (zf.y1 - zf.y0) * h;
     }
     return p;
 }

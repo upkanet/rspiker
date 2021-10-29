@@ -216,11 +216,13 @@ var tempZoomSelector = {};
 
 function zoomMouseDown(e){
     if(e.which == 1){
+        var zf = getZoomFrame();
         var h = $(e.currentTarget).height();
+        var w = $(e.currentTarget).width();
         //Zoom
-        tempZoomFrame = {x0:0,y0:0,x1:0,y1:0,active:false};
-        tempZoomFrame.x0 = e.offsetX;
-        tempZoomFrame.y0 = h - e.offsetY;
+        tempZoomFrame = {x0:0,y0:0,x1:1,y1:1,active:false};
+        tempZoomFrame.x0 = (e.offsetX / w) * (zf.x1 - zf.x0) + zf.x0;
+        tempZoomFrame.y0 = (1 - (e.offsetY / h)) * (zf.y1 - zf.y0) + zf.y0;
 
         //Selector
         $('#cursor-select').show();
@@ -242,14 +244,16 @@ function zoomMouseMove(e){
 
 function zoomMouseUp(e){
     if(e.which == 1){
+        var zf = getZoomFrame();
         var h = $(e.currentTarget).height();
+        var w = $(e.currentTarget).width();
         //Zoom
-        tempZoomFrame.x1 = e.offsetX;
-        tempZoomFrame.y1 = h - e.offsetY;
-        if(Math.abs(tempZoomFrame.x1 - tempZoomFrame.x0) > 10 && Math.abs(tempZoomFrame.y1 - tempZoomFrame.y0) > 10){
+        tempZoomFrame.x1 = (e.offsetX / w) * (zf.x1 - zf.x0) + zf.x0;
+        tempZoomFrame.y1 = (1 - (e.offsetY / h)) * (zf.y1 - zf.y0) + zf.y0;
+        //if(Math.abs(tempZoomFrame.x1 - tempZoomFrame.x0) > 0.001 && Math.abs(tempZoomFrame.y1 - tempZoomFrame.y0) > 0.001){
             setZoomFrame(tempZoomFrame);
             refresh();
-        }
+        //}
 
         //Selector
         $('#cursor-select').hide();
