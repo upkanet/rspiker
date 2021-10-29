@@ -336,7 +336,7 @@ class Electrode {
                 if(v > 0){
                     var x = k / aw;
                     var y = 0.5;
-                    ctx.fillRect(x * w,y * h,1,h/5);
+                    ctx.fillRect(x*w,y*h,1,h/5);
                 }
             });
         });
@@ -422,6 +422,9 @@ class Electrode {
 
             //Graph XY
             ctx.transform(1, 0, 0, -1, 0, canvas.height);
+
+            //Zoom
+            var zf = getZoomFrame();
     
             data.forEach((v,k) => {
                 if(v > 0){
@@ -429,7 +432,8 @@ class Electrode {
                     var x = t%tw / tw;
                     var y = Math.round(t/tw) / th;
                     ctx.fillStyle=plotColor(x,stimstartpos,stimendpos);
-                    ctx.fillRect(x * w,y * h,1,sh);
+                    var zpoint = zoomed(x * w,y * h,w,h,zf);
+                    ctx.fillRect(zpoint.x,zpoint.y,1,sh / (zf.y1 - zf.y0));
                 }
             });
             progressbar.count();
@@ -641,6 +645,7 @@ function getZoomFrame(){
 }
 
 function setZoomFrame(zf){
+    console.log(zf);
     //Order
     var zf2 = {};
     zf2.x0 = Math.min(zf.x0,zf.x1);
