@@ -411,6 +411,9 @@ class Electrode {
             var tw = timewidth;
             var th = Math.round((data.length / sample_rate) / tw);
             var sh = h / th * 0.8;
+
+            //Zoom
+            var zf = getZoomFrame();
     
             d.append(`<canvas width="${w}" height="${h}"></canvas>`);
             var canvas = $(`#${this.graph}>canvas`)[0];
@@ -418,13 +421,12 @@ class Electrode {
             
             //Stim Square
             ctx.fillStyle="#1F1F1F";
-            ctx.fillRect(stimstartpos * w,0,(stimendpos - stimstartpos) * w,h);
+            var sstop = zoomed(stimstartpos * w,0,w,h,zf);
+            var ssbottom = zoomed(stimendpos * w,h,w,h,zf);
+            ctx.fillRect(sstop.x,0,ssbottom.x-sstop.x,h);
 
             //Graph XY
             ctx.transform(1, 0, 0, -1, 0, canvas.height);
-
-            //Zoom
-            var zf = getZoomFrame();
     
             data.forEach((v,k) => {
                 if(v > 0){
