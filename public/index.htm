@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Axorus - Spiker</title>
+    <title>Axorus - RSpiker</title>
 </head>
 <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.0/dist/css/bootstrap-dark.min.css" integrity="sha256-kbkRO+z3M7RfAEv8nS4CXvEWInRxgMkPycqEr+QW0+0=" crossorigin="anonymous">
@@ -9,6 +9,7 @@
 <script src="js/plotly-latest.min.js"></script>
 <script src="js/record.js"></script>
 <script src="js/main.js"></script>
+<script src="js/particle.js"></script>
 <style>
     body{
         background-color: #121212;
@@ -135,6 +136,16 @@
         pointer-events: none;
         position:absolute;
         border: 1px dashed red;
+        display: none;
+    }
+
+    #canvas-logo{
+        position: absolute;
+        left:50%;
+        top:50%;
+        transform: translate(-50%,-50%);
+        width: 456px;
+        height: 400px;
     }
 
     .test{
@@ -190,13 +201,7 @@
     </div>
     <!-- Home Tab-->
     <div class="tab tab-active" id="home">
-        <div id="home-grid">
-            <button type="button" class="btn btn-primary" data-tab="raw" onclick="javascript:tshow(this);">Spectrum</button>
-            <button type="button" class="btn btn-primary" data-tab="filtered" onclick="javascript:tshow(this);">Filtered</button>
-            <button type="button" class="btn btn-primary" data-tab="raster" onclick="javascript:tshow(this);">Rasterplot</button>
-            <button type="button" class="btn btn-primary" data-tab="heatmap" onclick="javascript:tshow(this);">Heatmap</button>
-            <button type="button" class="btn btn-primary" data-tab="config" onclick="javascript:tshow(this);">Config</button>
-        </div>
+        <canvas id="canvas-logo"></canvas>
     </div>
     <!-- Raw Tab -->
     <div class="tab" id="raw"></div>
