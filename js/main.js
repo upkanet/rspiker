@@ -132,6 +132,8 @@ function bindButtons(){
     $('.graph-el').mousedown(zoomMouseDown);
     $('.graph-el').mousemove(zoomMouseMove);
     $('.graph-el').mouseup(zoomMouseUp);
+    $('.graph-el').mousemove(mvInfoGraph);
+    $('.graph-el').mouseout(clearInfoGraph);
     $('#btn-reset-zoom').click(btnZoomReset);
 }
 
@@ -263,4 +265,12 @@ function zoomMouseUp(e){
 function btnZoomReset(){
     zoomReset();
     refresh();
+}
+
+function mvInfoGraph(e){
+    infograph(e.offsetX,e.offsetY,$('#g-raw-el').width()+$('#g-filtered-el').width(),$('#g-raw-el').height()+$('#g-filtered-el').height(),e.clientX,e.clientY);
+}
+
+function clearInfoGraph(){
+    $('#infograph').hide();
 }
