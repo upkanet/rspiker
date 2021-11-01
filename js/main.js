@@ -280,7 +280,7 @@ function mvInfoGraph(e){
         mode = "raster";
         slider = 0;
     }
-    infograph(e.offsetX,e.offsetY,$(`#g-${mode}-el`).width(),$(`#g-${mode}-el`).height(),e.clientX,e.clientY,slider);
+    infograph(e.offsetX,e.offsetY,$(`#g-${mode}-el`).width(),$(`#g-${mode}-el`).height(),e.clientX,e.clientY,slider,(mode!="raster"));
 }
 
 function clearInfoGraph(){

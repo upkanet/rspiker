@@ -653,14 +653,25 @@ Array.prototype.topIndex = function(nb){
 }
 
 //Infograph
-function infograph(x,y,width,height,posx,posy,slider){
+function infograph(x,y,width,height,posx,posy,slider,value){
+    var yscale = 6000;//microvolt
     var zf = getZoomFrame();
     var xp = x/width;
+    var yp = (1-y/height);
     if(zf.active){
         xp = xp * (zf.x1 - zf.x0) + zf.x0;
+        yp = yp * (zf.y1 - zf.y0) + zf.y0;
     }
     var t = (slider + xp) * config.timewidth;
-    $('#infograph').html(new Intl.NumberFormat('fr-FR').format(Math.round(t*1000))+"&nbsp;ms");
+    var v = yp * yscale - yscale/2;
+    if(posx + 85 > window.innerWidth) {
+        posx = window.innerWidth - 85;
+    }
+    var valueTxt = "";
+    if(value){
+        valueTxt = new Intl.NumberFormat('fr-FR').format(Math.round(v))+"&nbsp;µV<br>";
+    }
+    $('#infograph').html(valueTxt+new Intl.NumberFormat('fr-FR').format(Math.round(t*1000))+"&nbsp;ms");
     $('#infograph').css('left',posx+20);
     $('#infograph').css('top',posy);
     $('#infograph').show();
