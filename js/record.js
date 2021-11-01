@@ -654,7 +654,7 @@ Array.prototype.topIndex = function(nb){
 
 //Infograph
 function infograph(x,y,width,height,posx,posy,slider,value){
-    var yscale = 6000;//microvolt
+    var yscale = 6586;//microvolt
     var zf = getZoomFrame();
     var xp = x/width;
     var yp = (1-y/height);
