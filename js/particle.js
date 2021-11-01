@@ -23,6 +23,7 @@ logoImage.addEventListener('load', ()=>{
         let row = [];
         for(let x = 0; x < canvaslogo.width; x++){
             const red = pixels.data[(y * 4 * pixels.width) + (x * 4)]/100;
+            const alpha = pixels.data[(y * 4 * pixels.width) + (x * 4) +3]/100;
             const cell = [
                 cellBrightness = red,
             ];

@@ -253,10 +253,20 @@ class Electrode {
         var canvas = $(`#${this.graph}>canvas`)[0];
         var ctx = canvas.getContext('2d');
 
+        const maxval = 65231;
+
         var f = $.getJSON(`/electrode/${this.short}/${this.number-1}/timeslice/${s}`, (data) => {
             var aw = data.length;
-            var atop = Math.max(...data);
-            var abot = Math.min(...data);
+            /*var atop = Math.max(...data);
+            var abot = Math.min(...data);*/
+            if(this.short == "e"){
+                var atop = maxval;
+                var abot = 0;
+            }
+            if(this.short == "f"){
+                var atop = maxval/2;
+                var abot = -maxval/2;
+            }
             var ah = atop - abot;
             var zf = getZoomFrame();
 
