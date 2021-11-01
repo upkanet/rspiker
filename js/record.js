@@ -666,6 +666,7 @@ function infograph(x,y,width,height,posx,posy,slider,value){
     var v = yp * yscale - yscale/2;
     if(posx + 85 > window.innerWidth) {
         posx = window.innerWidth - 85;
+        posy += 20;
     }
     var valueTxt = "";
     if(value){
