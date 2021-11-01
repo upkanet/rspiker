@@ -653,13 +653,13 @@ Array.prototype.topIndex = function(nb){
 }
 
 //Infograph
-function infograph(x,y,width,height,posx,posy){
+function infograph(x,y,width,height,posx,posy,slider){
     var zf = getZoomFrame();
     var xp = x/width;
     if(zf.active){
         xp = xp * (zf.x1 - zf.x0) + zf.x0;
     }
-    var t = (Number($('#slider').val()) + xp) * config.timewidth;
+    var t = (slider + xp) * config.timewidth;
     $('#infograph').html(new Intl.NumberFormat('fr-FR').format(Math.round(t*1000))+"&nbsp;ms");
     $('#infograph').css('left',posx+20);
     $('#infograph').css('top',posy);

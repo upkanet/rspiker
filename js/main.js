@@ -268,7 +268,19 @@ function btnZoomReset(){
 }
 
 function mvInfoGraph(e){
-    infograph(e.offsetX,e.offsetY,$('#g-raw-el').width()+$('#g-filtered-el').width(),$('#g-raw-el').height()+$('#g-filtered-el').height(),e.clientX,e.clientY);
+    var slider = Number($('#slider').val());
+    var mode = "";
+    if($('#g-raw-el').width() != 0){
+        mode = "raw";
+    }
+    else if($('#g-filtered-el').width() != 0){
+        mode = "filtered";
+    }
+    else if($('#g-raster-el').width() != 0){
+        mode = "raster";
+        slider = 0;
+    }
+    infograph(e.offsetX,e.offsetY,$(`#g-${mode}-el`).width(),$(`#g-${mode}-el`).height(),e.clientX,e.clientY,slider);
 }
 
 function clearInfoGraph(){
