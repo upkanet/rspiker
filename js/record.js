@@ -605,15 +605,14 @@ function showHM(){
 }
 
 function plotHM(ms){
+    var scale = 5;
     for(var i = 1; i <= 256;i++){
         var v = heatmap[i-1][ms]*20;
+        v = Math.round(v / scale);
         if(v>255) v=255;
         if(v<-255) v=-255;
         var r = 0;
         var g = 0;
-        /*if(v>=0) g = v;
-        if(v<0) r = -v;
-        $(`#g-heatmap-${i}`).css("background-color",`rgb(${r},${g},0)`);*/
         if(v>=0) g = 255;
         if(v<0) r = 255;
         $(`#g-heatmap-${i}`).css("background-color",`rgba(${r} ${g} 0 / ${Math.abs(v)/255 * 100}%)`);

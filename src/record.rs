@@ -255,7 +255,7 @@ impl Electrode {
         self.status.spikesorted = true;
     }
 
-    pub fn heatmap(&mut self){
+    /*pub fn heatmap(&mut self){
         if !self.status.filtered {
             self.filter()
         }
@@ -266,6 +266,26 @@ impl Electrode {
 
         for k in 0..hme.len() {
             let v = (self.filtered[k] - avg) / stddev;
+            hme[k] = v.round();
+        }
+
+        self.heatmapped = hme;
+        self.status.heatmapped = true;
+    }*/
+
+    pub fn heatmap(&mut self){
+        if !self.status.filtered {
+            self.filter()
+        }
+        let fe = self.filtered.to_vec();
+        let mut hme = fe.to_vec();
+
+        let kstart = (self.stimstart * self.sample_rate as f64) as usize;
+        let med = median(&fe[0..kstart].to_vec());
+        let mad = mad(&fe[0..kstart].to_vec());
+
+        for k in 0..hme.len() {
+            let v = (self.filtered[k] - med) / mad;
             hme[k] = v.round();
         }
 
