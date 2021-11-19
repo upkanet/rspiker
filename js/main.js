@@ -112,7 +112,8 @@ function logKey(e){
 function bindButtons(){
     $('#slider').change(refresh);
     $('#spike-layer').click(refresh);
-    $('#btn-select-el').click(select_el);
+    $('#btn-select-circuit').click(select_circuit);
+    $('#btn-select-mea').click(select_mea);
     $('#spectrum-cursor-cb').click(refresh);
     $('#btn-full-sample').click(fullFrameSpectrum);
     $('#btn-play-spectrum').click(playSpectrum);
@@ -285,4 +286,12 @@ function mvInfoGraph(e){
 
 function clearInfoGraph(){
     $('#infograph').hide();
+}
+
+function select_circuit(){
+    setBGImg('circuit');
+}
+
+function select_mea(){
+    setBGImg('mea');
 }
