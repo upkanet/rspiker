@@ -14,6 +14,12 @@ use record::{Record,Config};
 
 static mut R: Record = Record::empty();
 
+#[get("/record/open")]
+fn open_record() -> String {
+    prepare();
+    return "".to_string();
+}
+
 #[get("/electrode/<m>/<n>")]
 fn electrode(m: String, n: usize) -> String {
     unsafe{
@@ -150,20 +156,19 @@ fn prepare() {
         R.load();
         println!("Loading Data - Time elapsed : {}", now.elapsed().as_secs());
     }
-
 }
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error>{
     rocket::build()
-        .attach(AdHoc::on_ignite("Pepare data", |rocket| async move {
-            prepare();
-            rocket
-        }))
+        // .attach(AdHoc::on_ignite("Pepare data", |rocket| async move {
+        //     prepare();
+        //     rocket
+        // }))
         .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
             webbrowser::open("http://localhost:8000/").unwrap();
         })))
-        .mount("/", routes![index,favicon,js,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,setstart,getstart,stimstart,saveconfig])
+        .mount("/", routes![open_record,index,favicon,js,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,setstart,getstart,stimstart,saveconfig])
         .launch()
         .await
 }

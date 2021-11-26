@@ -10,8 +10,12 @@ function init(){
 
 function filenameTitle(){
     $.get(`/filename`,(f) => {
+        if(f=="") return "";
         var a = f.split("\\");
         $('title').append(" - "+a.at(-1));
+        $('#alert-file-exist').removeClass('alert-secondary');
+        $('#alert-file-exist').addClass('alert-success');
+        $('#alert-file-exist').html('File loaded');
     })
 }
 
@@ -90,6 +94,13 @@ function initGrid(){
     gridcollect.pushName("raster");
     gridcollect.pushName("heatmap");
     gridcollect.draw();
+}
+
+//Open record
+function selectRecordInvite(){
+    $.get('record/open',() => {
+        location.reload();
+    })
 }
 
 //KeyListener

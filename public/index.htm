@@ -188,6 +188,9 @@
     <!-- Tabs -->
     <ul class="nav nav-tabs nav-justified">
         <li class="nav-item">
+            <a class="nav-link" onclick="selectRecordInvite()"><i class="ri-folder-open-fill"></i></a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link active" data-tab="home" onclick="javascript:tshow(this);"><i class="ri-home-line"></i></a>
         </li>
         <li class="nav-item">
@@ -232,6 +235,14 @@
     </div>
     <!-- Home Tab-->
     <div class="tab tab-active" id="home">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <br>
+                    <div id="alert-file-exist" class="alert alert-secondary" role="alert">No file loaded - <a href="javascript:selectRecordInvite()"><i class="ri-folder-open-fill"></i> Open file</a></div>
+                </div>
+            </div>
+        </div>
         <canvas id="canvas-logo"></canvas>
     </div>
     <!-- Raw Tab -->
