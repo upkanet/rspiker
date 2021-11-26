@@ -136,6 +136,7 @@ function bindButtons(){
     $('.graph-el').mousemove(mvInfoGraph);
     $('.graph-el').mouseout(clearInfoGraph);
     $('#btn-reset-zoom').click(btnZoomReset);
+    $('#btn-crop-zoom').click(btnCropZoom);
 }
 
 function select_el(){
@@ -265,6 +266,11 @@ function zoomMouseUp(e){
 
 function btnZoomReset(){
     zoomReset();
+    refresh();
+}
+
+function btnCropZoom(){
+    cropStimZoom();
     refresh();
 }
 

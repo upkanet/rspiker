@@ -713,3 +713,14 @@ function zoomed(x,y,w,h,zf){
     }
     return p;
 }
+
+function cropStimZoom(){
+    var zf = getZoomFrame();
+    console.log(zf);
+    var tw = config.timewidth;
+    var ss = config.stimstart % tw;
+    var length = Number(prompt("Zoom around stimulation\nTime before and after stimulation (in ms)",100)) / 1000;
+    zf.x0 = (ss - length)/tw;
+    zf.x1 = (ss + length)/tw;
+    setZoomFrame(zf);
+}
