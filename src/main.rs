@@ -126,6 +126,13 @@ async fn js(f: String) -> Option<NamedFile> {
     NamedFile::open(&path).await.ok()
 }
 
+#[get("/css/<f>")]
+async fn css(f: String) -> Option<NamedFile> {
+    let path = Path::new("css/").join(f);
+    println!("{:?}",path);
+    NamedFile::open(&path).await.ok()
+}
+
 #[get("/favicon.ico")]
 async fn favicon() -> Option<NamedFile> {
     let path = Path::new("public/favicon.ico");
@@ -168,7 +175,7 @@ async fn main() -> Result<(), rocket::Error>{
         .attach(AdHoc::on_liftoff("Open Webbrowser", |_| Box::pin(async move {
             webbrowser::open("http://localhost:8000/").unwrap();
         })))
-        .mount("/", routes![open_record,index,favicon,js,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,setstart,getstart,stimstart,saveconfig])
+        .mount("/", routes![open_record,index,favicon,js,css,config,electrode,samplerate,filename,duration,timeslice,spectrum,clearcache,setstart,getstart,stimstart,saveconfig])
         .launch()
         .await
 }
