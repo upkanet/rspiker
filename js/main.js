@@ -129,6 +129,7 @@ function bindButtons(){
     $('#spike-layer').click(refresh);
     $('#btn-select-circuit').click(select_circuit);
     $('#btn-select-mea').click(select_mea);
+    $('#btn-select-el').click(select_el);
     $('#spectrum-cursor-cb').click(refresh);
     $('#btn-full-sample').click(fullFrameSpectrum);
     $('#btn-play-spectrum').click(playSpectrum);
