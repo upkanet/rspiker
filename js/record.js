@@ -671,7 +671,7 @@ function infograph(x,y,width,height,posx,posy,slider,value){
     if(value){
         valueTxt = new Intl.NumberFormat('fr-FR').format(Math.round(v))+"&nbsp;µV<br>";
     }
-    $('#infograph').html(valueTxt+new Intl.NumberFormat('fr-FR').format(Math.round(t*1000))+"&nbsp;ms");
+    $('#infograph').html(valueTxt+new Intl.NumberFormat('fr-FR').format((t*1000).toFixed(2))+"&nbsp;ms");
     $('#infograph').css('left',posx+20);
     $('#infograph').css('top',posy);
     $('#infograph').show();
