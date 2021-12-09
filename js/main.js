@@ -98,6 +98,10 @@ function initGrid(){
 
 //Open record
 function selectRecordInvite(){
+    show('home');
+    $('#alert-file-exist').removeClass('alert-success');
+    $('#alert-file-exist').addClass('alert-secondary');
+    $('#alert-file-exist').html('Loading...');
     $.get('record/open',() => {
         location.reload();
     })
