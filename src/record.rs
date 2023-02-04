@@ -350,7 +350,7 @@ impl Electrode {
 
     pub fn stimstart(&self) -> f64 {
         let e = &self.subraw();
-        let mut stimstart = 0;
+        let mut stimstart = 20000;
         for k in 0..e.len(){
             if e[k] > 60000.0{
                 stimstart = k;
@@ -358,6 +358,7 @@ impl Electrode {
             }
         }
         return stimstart as f64 / self.sample_rate as f64;
+        // return 0.5 as f64;
     }
 }
 

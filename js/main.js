@@ -153,6 +153,7 @@ function bindButtons(){
     $('.graph-el').mouseout(clearInfoGraph);
     $('#btn-reset-zoom').click(btnZoomReset);
     $('#btn-crop-zoom').click(btnCropZoom);
+    $('#g-raw-el').click(setStimStart)
 }
 
 function select_el(){
@@ -163,6 +164,18 @@ function select_el(){
         $(`[id^=g-${mode}-]`).css('border','');
         $(`#g-${mode}-${el}`).css('border','1px solid green');
     }
+}
+
+function setStimStart(e){
+    if(!e.ctrlKey) return 0
+    const xRel = (e.offsetX / $('#g-raw-el').width()).toFixed(3)
+    const stimStart = xRel*config.timewidth
+    let start = stimStart-0.5
+    console.log(start,stimStart)
+    $.post('/start/'+start)
+    // $.post('/stimstart/'+stimstart)
+    config.stimstart = stimStart-start
+    refresh()
 }
 
 function fullFrameSpectrum(){
