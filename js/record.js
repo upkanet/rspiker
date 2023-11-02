@@ -456,7 +456,7 @@ class Electrode {
 
     plotStack(){
         var timewidth = config.timewidth;
-        var step = $('#stack-width').val();
+        var step = Number($('#stack-width').val());
         var sample_rate = config.samplerate;
         var f = $.getJSON(`/electrode/s/${this.number-1}`, (data) => {
             var tw = timewidth;
@@ -470,6 +470,15 @@ class Electrode {
                     histo[Math.round(x * timewidth / step)] += 1;
                 }
             });
+            //
+            let i = 0
+            const formatedHistogram = histo.reduce((string, value)=>{
+                i++
+                return string + `${Number(step*(i-1)).toFixed(2)};${value}\n`
+            },'')
+            download('stack.csv',formatedHistogram)
+            
+            
             var d = $(`#${this.graph}`);
             d.html('');
             d.show();
@@ -723,4 +732,17 @@ function cropStimZoom(){
     zf.x0 = (ss - length)/tw;
     zf.x1 = (ss + length)/tw;
     setZoomFrame(zf);
+}
+
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
 }
