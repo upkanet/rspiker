@@ -476,7 +476,8 @@ class Electrode {
                 i++
                 return string + `${Number(step*(i-1)).toFixed(2)};${value}\n`
             },'')
-            download('stack.csv',formatedHistogram)
+            const mcdFile = $('#filename').val().split('\\').pop().split('.')[0]
+            download(`stack_${mcdFile}_E${this.number}.txt`,formatedHistogram)
             
             
             var d = $(`#${this.graph}`);
