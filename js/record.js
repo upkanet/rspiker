@@ -474,7 +474,7 @@ class Electrode {
             let i = 0
             const formatedHistogram = histo.reduce((string, value)=>{
                 i++
-                return string + `${Number(step*(i-1)).toFixed(2)};${value}\n`
+                return string + `${Number(step*(i-1)).toFixed(3)};${value}\n`
             },'')
             const mcdFile = $('#filename').val().split('\\').pop().split('.')[0]
             download(`stack_${mcdFile}_E${this.number}.txt`,formatedHistogram)
