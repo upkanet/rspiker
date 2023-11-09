@@ -735,6 +735,23 @@ function cropStimZoom(){
     setZoomFrame(zf);
 }
 
+//Raster
+function saveRaster(){
+    const graph = document.getElementById('g-raster-el')
+    const el = Number(graph.dataset.e)
+    fetch(`/electrode/s/${el-1}`)
+    .then(response=>response.json())
+    .then(data=>{
+        let spikesTimes = []
+        data.forEach((value,i)=>{
+            if(value == 0) return 0
+            spikesTimes.push(i / config.samplerate)
+        })
+
+        download(`raster-${config.filename.split('\\').slice(-1)[0].split('.')[0]}-EL${el}.csv`,spikesTimes.join(';'))
+    })
+}
+
 function download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
